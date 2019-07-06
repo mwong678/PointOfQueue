@@ -1,9 +1,11 @@
 {
   "client_id" : "93172ee3214a4ffbb4c58151d5463892",
   "client_secret" : "b67d3c80d1f646e6b0f6ea0272ef04f1",
-  "redirect_uri" : "http://c070ff4b.ngrok.io/callback",
-  "redirect_uri2" : "http://localhost:8888/callback",
+  "redirect_uri3" : "http://c070ff4b.ngrok.io/callback",
+  "redirect_uri2" : "http://localhost:8081/callback",
+  "redirect_uri" : "http://pointofqueue.us-west-2.elasticbeanstalk.com/callback",
   "queue_password" : "yeet",
   "playlist_id": "44nsrEcSso0RZ9DiOWRmEk",
-  "phone_id": "9ad9034401e383e9c2cd6b4c214350b85944463f"
+  "phone_id": "9ad9034401e383e9c2cd6b4c214350b85944463f",
+  "mac_id": "553899b1db10b90dbcc143c2cf7d1877ab971e4f"
 }
