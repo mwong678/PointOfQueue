@@ -5,7 +5,7 @@
   "redirect_uri4" : "http://localhost:8081/callback",
   "redirect_uri2" : "http://pointofqueue.us-west-2.elasticbeanstalk.com/callback",
   "redirect_uri_local" : "https://localhost:8081/callback",
-  "redirect_uri_deploy" : "https://pointofqueue.herokuapp.com/",
+  "redirect_uri_deploy" : "https://pointofqueue.herokuapp.com/callback",
   "queue_password" : "yeet",
   "playlist_id": "3MuLvWOj8FjiTywcjpE1IA",
   "phone_id": "9ad9034401e383e9c2cd6b4c214350b85944463f",
