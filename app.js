@@ -513,8 +513,8 @@ app.post('/queue', function(req, res) {
 
 });
 
-//var port = normalizePort(process.env.PORT || '8888');
-var port = 8081;
+var port = process.env.PORT || 8081;
+//var port = 8081;
 //var port = 8443;
 console.log('Listening on ' + port);
 app.listen(port);
