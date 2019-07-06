@@ -6,6 +6,8 @@
 
 var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
+var fs = require('fs')
+var https = require('https')
 var cors = require('cors');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
@@ -56,8 +58,8 @@ function getUsers(){
 
 function printError(body, code){
   console.log("Error, " + code + ": "+ body);
-
 }
+
 
 app.post('/',[
   check('name').not().isEmpty(),
@@ -341,7 +343,7 @@ app.post('/addtoqueue', function(req, res) {
                    var playSongOptions = {
                      url: 'https://api.spotify.com/v1/me/player/play?' + device,
                      headers: { 'Authorization': 'Bearer ' + access_token },
-                     body:{"context_uri": "spotify:playlist:44nsrEcSso0RZ9DiOWRmEk"},
+                     body:{"context_uri": "spotify:playlist:3MuLvWOj8FjiTywcjpE1IA"},
                      json: true
                    };
                    request.put(playSongOptions, function(error, response, body) {
@@ -367,6 +369,7 @@ app.post('/addtoqueue', function(req, res) {
               result: "Added " + song + " by " + artist + " to the queue"
             });
           }else{
+            console.log(response.body);
             printError(response.body, response.statusCode);
           }
         });
@@ -512,5 +515,6 @@ app.post('/queue', function(req, res) {
 
 //var port = normalizePort(process.env.PORT || '8888');
 var port = 8081;
+//var port = 8443;
 console.log('Listening on ' + port);
 app.listen(port);
