@@ -185,21 +185,23 @@
                     }
                 });
 
-                //$('p').on('touchstart', function(event){
-              //    event.preventDefault();
-            //    });
                 $('.resultItem').on('touchstart', function(event){
                     if (isTouchDevice)  {
-                        $(this).css('background', '#3498db');
-                        timeoutId = setTimeout(function(){
+                        var touchedItem = $(this);
+                        touchedItem.css('background', '#3498db');
+                        var holdButton = function(){
                           if (confirm('Would you like to add this song to the queue?')){
                             var uri = event.currentTarget.id;
                             var song = event.currentTarget.children[0].innerHTML;
                             var artist = event.currentTarget.children[1].innerHTML;
                             $('.resultItem').css('background', '#ededed');
                             addToQueue(uri, song, artist);
+                          }else{
+                            clearTimeout(timeoutId);
+                            touchedItem.css('background', '#ededed');
                           }
-                        }, 750);
+                        };
+                        timeoutId = setTimeout(holdButton, 750);
                     }
                 }).on('touchend', function(event){
                     if (isTouchDevice)  {
@@ -233,7 +235,8 @@
                 console.log(data.result);
               },
               error: function(res, error) {
-                  console.log("error")
+                var result = JSON.parse(res.responseText);
+                alert(result.result);
               }
       });
 
@@ -313,7 +316,6 @@
           } else {
             $(".container").css("visibility", "hidden");
             $("#loginBox").css("visibility", "visible");
-
           }
         }
       })();

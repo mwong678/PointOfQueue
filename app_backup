@@ -1,6 +1,8 @@
 
 //todo:
+//scenario where no active device
 //refresh tokens
+//what happens when we pause - no current song will be registered, deleting the data, maybe store global variable
 
 var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
@@ -12,7 +14,6 @@ var cookieParser = require('cookie-parser');
 var bodyParser  = require('body-parser');
 var properties = require('./properties.json');
 var users = [];
-var userAddingFirst = {};
 
 const { check, validationResult } = require('express-validator');
 const client_id = properties.client_id;
@@ -60,7 +61,6 @@ function printError(body, code){
 }
 
 
-
 app.post('/',[
   check('name').not().isEmpty(),
   check('password').not().isEmpty()
@@ -88,7 +88,7 @@ app.post('/',[
 
   if (password === queue_password) {
     var response = {};
-    response.user_id = name;
+    response.user_id = name + "_" + generateRandomString(3);
     res.cookie("user_id", response.user_id);
     res.status(200);
     res.send(response);
@@ -111,9 +111,8 @@ app.get('/login', function(req, res) {
     res.send('you are not logged in');
     return;
   }
-  var username = req.cookies["user_id"];
-  users.push(username);
-  userAddingFirst[username] = false;
+
+  users.push(req.cookies["user_id"]);
 
   var state = generateRandomString(16);
   res.cookie(stateKey, state);
@@ -254,7 +253,6 @@ app.post('/search', function(req, res) {
         result: finalResult
       });
     }else{
-      console.log("Search error")
       printError(response.body, response.statusCode);
     }
   });
@@ -264,31 +262,12 @@ app.post('/search', function(req, res) {
 
 app.post('/addtoqueue', function(req, res) {
   if (!req.body.uri || !req.body.song || !req.body.artist){
-    res.status(404);
-    res.send({
-      result: "Parameters empty"
-    });
+    console.log('parameters empty');
     return;
   }
   if (!req.body.access_token){
-    res.status(404);
-    res.send({
-      result: "No access token"
-    });
+    console.log('no access token');
     return;
-  }
-  if (!req.cookies["user_id"]){
-    res.status(404);
-    res.send({
-      result: "No user logged in"
-    });
-    return;
-  }
-  //temp fix, once db is up make sure this field is part of it and you can call it every time
-  if (!users.includes(req.cookies["user_id"])){
-    var username = req.cookies["user_id"];
-    users.push(username);
-    userAddingFirst[username] = false;
   }
   var query = querystring.stringify({
     uris: req.body.uri
@@ -296,7 +275,6 @@ app.post('/addtoqueue', function(req, res) {
   var access_token = req.body.access_token;
   var song = req.body.song;
   var artist = req.body.artist;
-  var username = req.cookies["user_id"];
 
   var addToQueueOptions = {
     url: 'https://api.spotify.com/v1/playlists/' + playlist_id + '/tracks?' + query,
@@ -317,80 +295,89 @@ app.post('/addtoqueue', function(req, res) {
     json: true
   };
 
-  var getCurrentlyPlaying = function() {
-    request.get(getCurrentOptions, function(error, response, body) {
-      if (!error && response.statusCode === 200) {
-          //if body is null that means no avail devices
-          if (body){
-            addSongToQueue(body.is_playing);
-          }else{
-            res.status(404);
-            res.send({
-              result: "No available devices. Turn one on"
-            });
-          }
-      }else if (!error && response.statusCode === 204) {
-          console.log("No track is playing");
-          addSongToQueue(false);
-      }else{
-        res.status(404);
-        res.send({
-          result: response.body.error.status + " " + response.body.error.message
-        });
-      }
-      return;
-    });
-  };
+  request.get(getCurrentOptions, function(error, response, body) {
+    if (!error && response.statusCode === 200 || response.statusCode === 204) {
+        var isPlaying = (body) ? body.is_playing : null;
+        request.post(addToQueueOptions, function(error, response, body) {
 
-  var addSongToQueue = function(isPlaying) {
-    request.post(addToQueueOptions, function(error, response, body) {
-        console.log("Adding " + song + " by " + artist + " to the queue");
-        if (!error && response.statusCode === 201) {
-          if (!isPlaying){
-            userAddingFirst[username] = true;
-            var playSongOptions = {
-              url: 'https://api.spotify.com/v1/me/player/play',
-              headers: { 'Authorization': 'Bearer ' + access_token },
-              body:{"context_uri": "spotify:playlist:3MuLvWOj8FjiTywcjpE1IA"},
-              json: true
-            };
-            playSong(playSongOptions);
-          }else{
+          //hypothetically, if the time between adding to the queue and
+          //playing it is too long, then the song will be deleted
+          // (time between adding/playing) needs to be < (time to get queuelist + time to getcurrentsong)
+          //this is observed and expected, however
+          console.log("Adding " + song + " by " + artist + " to the queue");
+
+          if (!error && response.statusCode === 201) {
+            if (!isPlaying){
+              addingFirstSong = true;
+              request.get(getDeviceOptions, function(error, response, body){
+                if (!error && response.statusCode === 200) {
+                    var devices = body.devices;
+
+                    if (devices.length == 0) {
+                      res.send({
+                        result: "No active devices"
+                      });
+                      return;
+                    }
+                    var foundPhone = false;
+                    var activeId = mac_id;
+                    for (var i = 0; i < devices.length;i++){
+                      if (devices[i].id == phone_id){
+                        foundPhone = true;
+                        devices[i].is_active = true;
+                      }else if (devices[i].is_active == true){
+                        activeId = devices[i].id;
+                      }
+                    }
+                    var device;
+                    if (foundPhone){
+                      device = querystring.stringify({
+                       device_id: phone_id
+                     });
+                   }else{
+                     device = querystring.stringify({
+                      device_id: activeId
+                    });
+                   }
+
+                   var playSongOptions = {
+                     url: 'https://api.spotify.com/v1/me/player/play?' + device,
+                     headers: { 'Authorization': 'Bearer ' + access_token },
+                     body:{"context_uri": "spotify:playlist:3MuLvWOj8FjiTywcjpE1IA"},
+                     json: true
+                   };
+                   request.put(playSongOptions, function(error, response, body) {
+                     if (!error && response.statusCode === 204) {
+                       console.log("Playing " + song + " by " + artist + " from the queue");
+                       addingFirstSong = false;
+                     }else{
+                       console.log(response.body);
+                       printError(response.body, response.statusCode);
+                     }
+                   });
+
+                }else{
+                  console.log(response.body);
+                  printError(response.body, response.statusCode);
+                }
+              });
+            }else{
+              console.log("Song added, queue continues");
+            }
+
             res.send({
               result: "Added " + song + " by " + artist + " to the queue"
             });
+          }else{
+            console.log(response.body);
+            printError(response.body, response.statusCode);
           }
-        }else{
-          res.status(404);
-          res.send({
-            result: response.body.error.status + " " + response.body.error.message
-          });
-        }
-        return;
-    });
-  };
-
-
-  var playSong = function(playSongOptions){
-    request.put(playSongOptions, function(error, response, body) {
-      if (!error && response.statusCode === 204) {
-        console.log("Playing " + song + " by " + artist + " from the queue");
-        userAddingFirst[username] = false;
-        res.send({
-          result: "Added and now playing " + song + " by " + artist + " to the queue"
         });
-      }else{
-        res.status(404);
-        res.send({
-          result: response.body.error.status + " " + response.body.error.message + ", turn one on."
-        });
-      }
-      return;
-    });
-  };
+    }else{
+      printError(response.body, response.statusCode);
+    }
+  });
 
-
-  getCurrentlyPlaying();
   return;
 });
 
@@ -399,20 +386,7 @@ app.post('/queue', function(req, res) {
     console.log('no access token');
     return;
   }
-  if (!req.cookies["user_id"]){
-    res.status(404);
-    res.send({
-      result: "No user logged in"
-    });
-    return;
-  }
-  if (!users.includes(req.cookies["user_id"])){
-    var username = req.cookies["user_id"];
-    users.push(username);
-    userAddingFirst[username] = false;
-  }
   var access_token = req.body.access_token;
-  var username = req.cookies["user_id"];
   var getQueueOptions = {
     url: 'https://api.spotify.com/v1/playlists/' + playlist_id + '/tracks',
     headers: {
@@ -429,135 +403,118 @@ app.post('/queue', function(req, res) {
     json: true
   };
 
+
   var duration, progress, id;
+  request.get(getQueueOptions, function(error, response, body) {
 
-  var getQueue = function(){
-    request.get(getQueueOptions, function(error, response, body) {
-      if (!error && response.statusCode === 200) {
-        getCurrentlyPlaying(body);
-      }else{
-        res.status(404);
-        res.send({
-          result: response.body.error.status + " " + response.body.error.message
-        });
-      }
-      return;
-    });
-  };
+    if (!error && response.statusCode === 200) {
+      var queueBody = body;
 
-  var getCurrentlyPlaying = function(queueBody) {
-    request.get(getCurrentOptions, function(error, response, body) {
-      if (!error && response.statusCode === 200 || response.statusCode === 204) {
-        var isPlaying = (body) ? body.is_playing : null;
-        if (body){
-          duration = body.item.duration_ms;
-          progress = body.progress_ms;
-          if (progress > 0){
-            id = body.item.id;
-          }
-        }else{
-          res.status(400);
-          res.send({
-            result: "No available devices. Turn on one."
-          });
-          return;
-        }
+      request.get(getCurrentOptions, function(error, response, body) {
+        if (!error && (response.statusCode === 200 || response.statusCode === 204)) {
+          var isPlaying = (body) ? body.is_playing : null;
 
-        if (body.is_playing && body.item != null){
-          console.log("SOMETHING IS PLAYING");
-        }else{
-          console.log("NOTHING IS PLAYING");
-        }
-
-        var finalResult = [];
-        var toDelete = [];
-        var currTrackFound = false;
-
-        finalResult.push({
-            duration: duration,
-            progress: progress,
-            id: id
-          });
-
-        for (var i = 0; i < queueBody.items.length; i++) {
-          var currTrack = queueBody.items[i].track;
-          if (currTrackFound) {
-            var songName = currTrack.name;
-            var songURI = currTrack.uri;
-            var artists = currTrack.artists;
-            var artistString = "";
-            for (var j = 0; j < artists.length; j++) {
-              if (j > 0) {
-                artistString += ', ';
-              }
-              artistString += artists[j].name;
+          if (body){
+            duration = body.item.duration_ms;
+            progress = body.progress_ms;
+            if (progress > 0){
+              id = body.item.id;
             }
-            finalResult.push({
-              name: songName,
-              uri: songURI,
-              artists: artistString,
+          }else{
+            res.status(400);
+            res.send({
+              result: "No available devices. Turn on one."
             });
-          } else {
-            if (currTrack.id == id) {
-              currTrackFound = true;
-              i--;
-            }else{
-              toDelete.push({"uri": currTrack.uri});
+            return;
+          }
+
+          if (body.is_playing && body.item != null){
+            console.log("SOMETHING IS PLAYING");
+          }else{
+            console.log("NOTHING IS PLAYING");
+          }
+
+          var finalResult = [];
+          var toDelete = [];
+          var passed = false;
+
+          finalResult.push({
+              duration: duration,
+              progress: progress,
+              id: id
+            });
+
+          for (var i = 0; i < queueBody.items.length; i++) {
+            var currTrack = queueBody.items[i].track;
+            if (passed) {
+              var songName = currTrack.name;
+              var songURI = currTrack.uri;
+              var artists = currTrack.artists;
+              var artistString = "";
+              for (var j = 0; j < artists.length; j++) {
+                if (j > 0) {
+                  artistString += ', ';
+                }
+                artistString += artists[j].name;
+              }
+              finalResult.push({
+                name: songName,
+                uri: songURI,
+                artists: artistString,
+              });
+            } else {
+              if (currTrack.id == id) {
+                passed = true;
+                i--;
+              }else{
+                toDelete.push({"uri": currTrack.uri});
+              }
             }
           }
+
+          res.send({
+            result: finalResult
+          });
+
+          var deleteOptions = {
+            url: 'https://api.spotify.com/v1/playlists/' + playlist_id + '/tracks',
+            body: {"tracks": toDelete},
+            headers: {
+              'Authorization': 'Bearer ' + access_token
+            },
+            json: true
+          }
+
+          console.log("addingFirstSong: " + addingFirstSong);
+          console.log("isPlaying: " + isPlaying);
+          console.log("Progress: " + progress);
+          console.log("ID: " + id);
+          console.log("# songs to delete: " + toDelete.length);
+          console.log();
+          if (toDelete.length > 0 && !addingFirstSong && (isPlaying || id === undefined)){
+            request.delete(deleteOptions, function(error, response, body){
+              if (!error && response.statusCode === 200) {
+                  console.log("Successfully deleted songs!");
+              }else{
+                printError(error, response.statusCode);
+              }
+            });
+          }
+
+        } else {
+          printError(error, response.statusCode);
         }
+      });
 
-        res.send({
-          result: finalResult
-        });
+    } else {
+      console.log(error);
+    }
+  });
 
-        var deleteOptions = {
-          url: 'https://api.spotify.com/v1/playlists/' + playlist_id + '/tracks',
-          body: {"tracks": toDelete},
-          headers: {
-            'Authorization': 'Bearer ' + access_token
-          },
-          json: true
-        }
-
-        console.log("addingFirstSong: " + userAddingFirst[username]);
-        console.log("isPlaying: " + isPlaying);
-        console.log("Progress: " + progress);
-        console.log("ID: " + id);
-        console.log("# songs to delete: " + toDelete.length);
-        console.log("currTrackFound: " + currTrackFound);
-        console.log();
-        if (toDelete.length > 0 && !userAddingFirst[username] && (isPlaying || id === undefined)){
-          deleteFromPlaylist(deleteOptions);
-        }
-      }else{
-        res.status(404);
-        res.send({
-          result: response.body.error.status + " " + response.body.error.message
-        });
-      }
-      return;
-    });
-  };
-
-  var deleteFromPlaylist = function(deleteOptions){
-    request.delete(deleteOptions, function(error, response, body){
-      if (!error && response.statusCode === 200) {
-          console.log("Successfully deleted songs!");
-      }else{
-        res.status(404);
-        res.send({
-          result: response.body.error.status + " " + response.body.error.message
-        });
-      }
-      return;
-    });
-  };
-
-  getQueue();
-  return;
 });
 
 var port = process.env.PORT || 8081;
+//var port = 8081;
+//var port = 8443;
 console.log('Listening on ' + port);
 app.listen(port);
