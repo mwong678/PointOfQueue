@@ -35,10 +35,6 @@ var generateRandomString = function(length) {
 
 
 var stateKey = 'spotify_auth_state';
-var addingFirstSong = false;
-var ACCESS_TOKEN;
-var REFRESH_TOKEN;
-
 var app = express();
 
 app.use(express.static(__dirname + '/public'))
