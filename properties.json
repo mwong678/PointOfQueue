@@ -1,13 +1,7 @@
 {
   "client_id" : "93172ee3214a4ffbb4c58151d5463892",
   "client_secret" : "b67d3c80d1f646e6b0f6ea0272ef04f1",
-  "redirect_uri3" : "http://c070ff4b.ngrok.io/callback",
-  "redirect_uri4" : "http://localhost:8081/callback",
-  "redirect_uri2" : "http://pointofqueue.us-west-2.elasticbeanstalk.com/callback",
   "redirect_uri_local" : "http://localhost:8081/callback",
   "redirect_uri_deploy" : "https://pointofqueue.herokuapp.com/callback",
-  "queue_password" : "yeet",
-  "playlist_id": "3MuLvWOj8FjiTywcjpE1IA",
-  "phone_id": "9ad9034401e383e9c2cd6b4c214350b85944463f",
-  "mac_id": "553899b1db10b90dbcc143c2cf7d1877ab971e4f"
+  "dbURI" : "mongodb+srv://admin:Mantis123%21@pointofqueue-zo4md.mongodb.net/poq?retryWrites=true&w=majority"
 }

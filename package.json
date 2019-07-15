@@ -9,8 +9,11 @@
     "cors": "^2.8.4",
     "express": "~4.16.0",
     "express-validator": "^6.1.0",
+    "mongodb": "^3.2.7",
     "querystring": "~0.2.0",
     "request": "~2.83.0"
   },
-  "scripts": { "start": "node app.js" }
+  "scripts": {
+    "start": "node app.js"
+  }
 }

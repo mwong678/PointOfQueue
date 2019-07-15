@@ -29,16 +29,23 @@ const https = require('https')
 const cors = require('cors');
 const properties = require('./properties.json');
 
+
 var mongo = require('./mongo.js');
 var myDB, userCollection, roomCollection;
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 var bodyParser  = require('body-parser');
+var users = [];
+var userAddingFirst = {};
 
 const { check, validationResult } = require('express-validator');
 const client_id = properties.client_id;
 const client_secret = properties.client_secret;
 const redirect_uri = (process.env.PORT) ? properties.redirect_uri_deploy : properties.redirect_uri_local;
+const queue_password = properties.queue_password;
+const playlist_id = properties.playlist_id;
+const phone_id = properties.phone_id;
+const mac_id = properties.mac_id;
 
 var generateRandomString = function(length) {
   var text = '';
@@ -76,15 +83,15 @@ async function getRoomCodeInDB(code){
 }
 
 async function addUserInDB(username, password){
-  let result = await userCollection.insertOne({username: username, password: password});
+  let result = await userCollection.insertOne({username: username, password: password, access_token: '', refresh_token: ''});
   return result ? true : false;
 }
 
-async function updateRoomCodesInDB(code, access_token, refresh_token){
-  let query = {code: code};
+async function updateUserCodesInDB(username, access_token, refresh_token){
+  let query = {username: username};
   let updated = {$set: {access_token: access_token, refresh_token: refresh_token}};
-  let result = await roomCollection.updateOne(query, updated);
-  return result;
+  let result = await userCollection.updateOne(query, updated);
+  return result ? true : false;
 }
 
 
@@ -109,7 +116,7 @@ async function updateRoomQueue(code, newQueue){
   return result;
 }
 
-async function addRoomInDB(username, playlistURI, playlistName, access_token, refresh_token){
+async function addRoomInDB(username, playlistURI, playlistName){
   var code;
   var findResult = true;
   while(findResult){
@@ -126,23 +133,23 @@ async function addRoomInDB(username, playlistURI, playlistName, access_token, re
                              progress: '',
                              duration: '',
                              id: ''
-                           },
-              access_token: access_token,
-              refresh_token: refresh_token
+                            }
               }
   let insertResult = await roomCollection.insertOne(item);
   return insertResult ? code : null;
 }
 
-async function deleteRoom(code){
-  let result = await roomCollection.deleteOne({code: code});
+async function clearQueue(code){
+  let query = {code: code};
+  let updated = { $set: { queue: [] } };
+  let result = await roomCollection.updateOne(query, updated);
   return result;
 }
 
 function refreshToken(refresh_token, callback){
   var authOptions = {
     url: 'https://accounts.spotify.com/api/token',
-    headers: { 'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64')) },
+    headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
     form: {
       grant_type: 'refresh_token',
       refresh_token: refresh_token
@@ -266,10 +273,8 @@ app.get('/createroom', function(req, res){
           let playlistName = result.name;
           let playlistURI = result.uri;
 
-          addRoomInDB(username, playlistURI, playlistName, access_token, refresh_token).then(function(result){
+          addRoomInDB(username, playlistURI, playlistName).then(function(result){
             if (result){
-              res.cookie("access_token", access_token);
-              res.cookie("refresh_token", refresh_token);
               res.cookie("room_code", result);
               res.cookie("room_owner", username);
               res.cookie("playlist_name", playlistName);
@@ -314,7 +319,11 @@ app.get('/createroom', function(req, res){
     });
   };
 
-  createPlaylist(access_token);
+  updateUserCodesInDB(username, access_token, refresh_token).then(function(updateResult){
+    if (updateResult){
+      createPlaylist(access_token);
+    }
+  });
 
 });
 
@@ -324,10 +333,10 @@ app.post('/findroom', function(req, res){
       let owner = roomResult.owner;
       let playlist = roomResult.playlist;
       let playlistName = roomResult.playlist_name;
-      let access_token = roomResult.access_token;
-      let refresh_token = roomResult.refresh_token;
       getUserInDB(owner).then(function(userResult){
         if (userResult){
+          let access_token = userResult.access_token;
+          let refresh_token = userResult.refresh_token;
           res.cookie("access_token", access_token);
           res.cookie("refresh_token", refresh_token);
           res.cookie("room_code", req.body.code);
@@ -409,7 +418,7 @@ app.get('/callback', function(req, res) {
         grant_type: 'authorization_code'
       },
       headers: {
-        'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
+        'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
       },
       json: true
     };
@@ -478,7 +487,23 @@ app.post('/search', function(req, res) {
         res.send({
           result: "Retry"
         });
-
+        /*
+        refreshToken(refresh_token, function(new_access_token){
+          updateUserCodesInDB(username, new_access_token, refresh_token).then(function(updateResult){
+            if (updateResult){
+              res.cookie("access_token", new_access_token);
+              res.send({
+                result: "Retry"
+              });
+            }else{
+              res.status(404);
+              res.send({
+                result: "Update failed, try again"
+              });
+            }
+          });
+        });
+        */
       }else{
         res.status(response.body.error.status);
         res.send({
@@ -491,7 +516,6 @@ app.post('/search', function(req, res) {
   return;
 });
 
-/*
 app.post('/refreshtoken', function(req, res){
   var access_token = req.body.access_token;
   var refresh_token = req.body.refresh_token;
@@ -513,46 +537,8 @@ app.post('/refreshtoken', function(req, res){
     });
   });
 });
-*/
 
-app.get('/deleteroom', function(req, res){
-  let code = req.cookies["room_code"];
-  let playlist = req.cookies["playlist"];
-  let access_token = req.cookies["access_token"];
-
-  var deleteOptions = {
-    url: 'https://api.spotify.com/v1/playlists/'+playlist+'/followers',
-    headers: { 'Authorization': 'Bearer ' + access_token },
-    json: true
-  };
-
-  request.delete(deleteOptions, function(error, response, body) {
-    if (!error && response.statusCode == 200){
-      deleteRoom(code).then(function(deleteResult){
-        if (deleteResult){
-          res.cookie("access_token", '');
-          res.cookie("refresh_token", '');
-          res.cookie("room_code", '');
-          res.cookie("room_owner", '');
-          res.cookie("playlist_name", '');
-          res.cookie("playlist", '');
-          res.send({
-            result: "Success"
-          });
-        }else{
-          res.status(500);
-          res.send({
-            result: "Error Deleting Room"
-          });
-        }
-      });
-    }else{
-      res.status(500);
-      res.send({
-        result: "Error Deleting Playlist"
-      });
-    }
-  });
+app.post('/deleteroom', function(req, res){
 
 });
 
@@ -588,33 +574,13 @@ app.post('/addtoqueue', function(req, res) {
     json: true
   };
 
-  var turnOffShuffleOptions = {
-    url: 'https://api.spotify.com/v1/me/player/shuffle?state=false',
-    headers: { 'Authorization': 'Bearer ' + access_token },
-    json: true
-  };
-
-  var turnOffRepeatOptions = {
-    url: 'https://api.spotify.com/v1/me/player/repeat?state=off',
-    headers: { 'Authorization': 'Bearer ' + access_token },
-    json: true
-  };
-
-  var turnOffShuffle = function(){
-    request.put(turnOffShuffleOptions);
-  }
-
-  var turnOffRepeat = function(){
-    request.put(turnOffRepeatOptions);
-  }
-
   var getCurrentlyPlaying = function() {
     request.get(getCurrentOptions, function(error, response, body) {
       if (!error && response.statusCode === 200) {
           //if body is null that means no avail devices
           if (body){
-            let currPlaylistArray = (body.context) ? body.context.uri.split(":") : null;
-            let currPlaylist = (currPlaylistArray) ? currPlaylistArray[currPlaylistArray.length - 1] : null;
+            let currPlaylistArray = body.context.uri.split(":");
+            let currPlaylist = currPlaylistArray[currPlaylistArray.length - 1];
             let progress = body.progress_ms;
             let duration = body.item.duration_ms;
             let id = body.item.uri;
@@ -704,8 +670,6 @@ app.post('/addtoqueue', function(req, res) {
   var playSong = function(playSongOptions){
     request.put(playSongOptions, function(error, response, body) {
       if (!error && response.statusCode === 204) {
-        turnOffShuffle();
-        turnOffRepeat();
         updateRoomLock(room_code, false).then(function(lockResult){
           if (lockResult){
             console.log("Playing " + song + " by " + artist + " from the queue");
@@ -736,24 +700,18 @@ app.post('/addtoqueue', function(req, res) {
 
 app.post('/queue', function(req, res) {
   var room_code = req.cookies["room_code"];
-  var req_access_token = req.cookies["access_token"];
-  var req_refresh_token = req.cookies["refresh_token"];
   var result = {};
   getRoomCodeInDB(room_code).then(function(roomResult){
     if (roomResult){
       result.currentTrack = roomResult.currentTrack;
       result.queue = roomResult.queue;
-      if (req_access_token != roomResult.access_token){
-        console.log("Changed to new access token in cookies!");
-        res.cookie("access_token", roomResult.access_token);
-      }
       res.send({
         result: result
       });
     }else{
       res.status(404);
       res.send({
-        result: "Error getting queue"
+        result: response.body.error.status + " " + response.body.error.message
       });
     }
   });
@@ -769,13 +727,13 @@ function updateQueues(){
         var code = currRoom.code;
         var queue = currRoom.queue;
         var owner = currRoom.owner;
-        var access_token = currRoom.access_token;
-        var refresh_token = currRoom.refresh_token;
         var playlistURI = currRoom.playlist;
         var playlist_id = playlistURI.split(":")[2];
 
         getUserInDB(owner).then(function(userResult){
           if (userResult){
+            var access_token = userResult.access_token;
+            var refresh_token = userResult.refresh_token;
 
             var getQueueOptions = {
               url: 'https://api.spotify.com/v1/playlists/' + playlist_id + '/tracks',
@@ -798,23 +756,30 @@ function updateQueues(){
                 if (!error && response.statusCode === 200) {
                   getCurrentlyPlaying(body);
                 }else{
-                  console.log("Error getting playlist");
+                  console.log("Error getting playlist:");
                   if (response){
+                    /*
                     if (response.body.error.status == 401 && response.body.error.message.includes('expired')){
-                      console.log("Code expired. Refreshing code...");
                       refreshToken(refresh_token, function(new_access_token){
-                        updateRoomCodesInDB(code, new_access_token, refresh_token).then(function(updateResult){
+                        updateUserCodesInDB(owner, new_access_token, refresh_token).then(function(updateResult){
                           if (updateResult){
-                            console.log("Code refreshed");
+                            res.cookie("access_token", new_access_token);
+                            res.send({
+                              result: "Retry"
+                            });
                           }else{
-                            console.log("Error: unable to refresh code");
+                            res.status(404);
+                            res.send({
+                              result: "Update failed, try again"
+                            });
                           }
                         });
                       });
-                    }else{
-                      console.log(response.body.error.status + ": " + response.body.error.message);
                     }
-
+                    */
+                    console.log(response.body.error.status + ": " + response.body.error.message);
+                  }else{
+                    console.log(response);
                   }
                 }
               });
@@ -828,7 +793,7 @@ function updateQueues(){
                   if (body && body.item){
                     duration = body.item.duration_ms;
                     progress = body.progress_ms;
-                    if (progress > 0 || (progress == 0 && isPlaying)){
+                    if (progress > 0){
                       id = body.item.id;
                     }
                     let newCurrTrack = {progress: progress, duration: duration, uri: id};
@@ -838,13 +803,11 @@ function updateQueues(){
                     return;
                   }
 
-                  /*
-                  if (isPlaying && body.item != null){
+                  if (body.is_playing && body.item != null){
                     console.log("SOMETHING IS PLAYING");
                   }else{
                     console.log("NOTHING IS PLAYING");
                   }
-                  */
 
                   var finalResult = [];
                   var toDelete = [];
@@ -888,14 +851,12 @@ function updateQueues(){
                     },
                     json: true
                   }
-
                   console.log("isPlaying: " + isPlaying);
                   console.log("Progress: " + progress);
                   console.log("ID: " + id);
                   console.log("# songs to delete: " + toDelete.length);
                   console.log("currTrackFound: " + currTrackFound);
                   console.log();
-
                   if (toDelete.length > 0 && (isPlaying || id === undefined)){
                     getRoomCodeInDB(code).then(function(roomResult){
                       if (roomResult){
@@ -908,7 +869,7 @@ function updateQueues(){
                   }
                 }else{
                   console.log("Error getting current: ");
-                  if (response.body){
+                  if (response.body.error){
                     console.log(response.body.error.status + ": " + response.body.error.message);
                   }else{
                     console.log(response);
@@ -956,7 +917,7 @@ mongo.connectToServer( function( err, client ) {
   userCollection = myDB.collection("users");
   roomCollection = myDB.collection("rooms");
 
-  var deleteRoom2 = async function(code){
+  var deleteRoom = async function(code){
     await roomCollection.deleteOne({code: code}, (err, result) => {
       if (err){
         throw err;
@@ -964,18 +925,8 @@ mongo.connectToServer( function( err, client ) {
     });
   }
 
-  var deleteUser = async function(username){
-    await userCollection.deleteOne({username: username}, (err, result) => {
-      if (err){
-        throw err;
-      }
-    });
-  };
-
   //deleteRoom('qzch');
-  //deleteRoom('BUDZ');
-  //deleteUser('mwong678');
-  //deleteUser('matt_wong');
+  //deleteRoom('Og7t');
   //clearQueue("Og7t");
 
   userCollection.find().toArray((err, items) => {

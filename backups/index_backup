@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+</head>
+<body>
+
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:700,600' rel='stylesheet' type='text/css'>
+  <link href='style.css' rel='stylesheet' type='text/css'>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js" type="text/javascript"></script>
+  <script src="https://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+  <script src="jquery.ui.touch-punch.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <script>
+    $( function() {
+      $('.searchBar').submit(function () {
+       searchSongs();
+       return false;
+      });
+    } );
+  </script>
+
+  <div id="tabs" class="container">
+  <ul class="tabs">
+    <li class="tab-link current" data-tab="tab-1">Queue</li>
+    <li class="tab-link" data-tab="tab-2">Search</li>
+  </ul>
+
+  <div id="tab-1" class="tab-content current">
+    <label id="queueMsg"></label>
+    <ul id = "queueList">
+    </ul>
+  </div>
+  <div id="tab-2" class="tab-content">
+    <form class="searchBar" >
+      <input type="text" id="searchText" placeholder="Search..." name="search">
+      <button type="button" onclick="searchSongs()"><i class="fa fa-search"></i></button>
+
+      <label id="resultMsg" class="error"></label>
+      <ul id=resultList>
+      </ul>
+    </form>
+  </div>
+</div>
+<!-- <button type="submit" onclick=""><i class="fa fa-search"></i></button> -->
+
+  <form method="post" action="/">
+  <div id ="loginBox" class="box">
+  <h1>Queue Login</h1>
+
+  <input id ="nameField" type="name" name="name" placeholder="name" value="" class="email" />
+  <label id="nameError" class="error"></label>
+  <input id ="passwordField" type="password" name="password" placeholder="password" value="" class="email" />
+  <label id="passwordError" class="error"></label>
+  <br/>
+  <br />
+  <a onclick="window.location.href='/signup'" id="signUp"><div class="btn">Sign Up</div></a>
+  <a onclick="submitCreds()" id="signIn"><div class="btn">Sign In</div></a>
+  <br />
+  <label id="successMsg" class="success"></label>
+  <br />
+  <a id="authorizeButton" onclick="window.location.href='/login'" id="auth"><div class="btn">Authorize</div></a>
+  </div>
+  </form>
+
+  <script>
+
+    function getCookie(cname) {
+      var name = cname + "=";
+      var decodedCookie = decodeURIComponent(document.cookie);
+      var ca = decodedCookie.split(';');
+      for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return "";
+    }
+
+    function setErrors(json){
+      var nameError = document.getElementById('nameError');
+      var passwordError = document.getElementById('passwordError');
+      var successMsg = document.getElementById('successMsg');
+
+      if (json.name){
+        nameError.innerHTML = json.name;
+      }else{
+        nameError.innerHTML = '';
+      }
+
+      if (json.password){
+        passwordError.innerHTML = json.password;
+      }else{
+        passwordError.innerHTML = '';
+      }
+
+      if (json.success){
+        successMsg.innerHTML = json.success;
+      }else{
+        successMsg.innerHTML = '';
+      }
+    }
+
+    function submitCreds(){
+      var name = document.getElementById('nameField').value;
+      var password = document.getElementById('passwordField').value;
+      $.ajax({
+              type: "POST",
+              url: '/',
+              data: {name: name, password: password},
+              dataType: 'json',
+              success: function(data) {
+                  var empty = {};
+                  empty.success = "Success! Please Authorize Spotify Below";
+                  console.log("Success!" + data.user_id);
+                  setErrors(empty);
+                  $("#authorizeButton").show();
+              },
+              error: function(res, error) {
+                  var result = JSON.parse(res.responseText);
+                  console.log(result);
+                  console.log(result.name);
+                  setErrors(result);
+              }
+      });
+    }
+
+    function searchSongs(){
+      var query = document.getElementById('searchText').value;
+      var access_token = getCookie('access_token');
+      if (query.length == 0){
+        console.log('query is empty');
+        return;
+      }
+      if (!access_token){
+        alert("You are unauthorized to do this!");
+        return;
+      }
+      $.ajax({
+              type: "POST",
+              url: '/search',
+              data: {query: query, access_token: access_token},
+              dataType: 'json',
+              success: function(data) {
+                $('#resultList').empty();
+                var resultList = document.getElementById('resultList');
+                var i;
+                for (i = 0;i < data.result.length;i++){
+                  var newLI = document.createElement("li");
+                  var songP = document.createElement("p");
+                  var artistP = document.createElement("p");
+                  var artistString = "";
+                  var j;
+
+                  for (j = 0; j < data.result[i].artists.length; j++){
+                    if (j > 0){
+                      artistString += ', ';
+                    }
+                    artistString += data.result[i].artists[j];
+                  }
+
+                  newLI.setAttribute("class", "resultItem");
+                  newLI.setAttribute("id", data.result[i].uri);
+                  songP.setAttribute("class", "songP");
+                  artistP.setAttribute("class", "artistP");
+                  songP.appendChild(document.createTextNode(data.result[i].name));
+                  artistP.appendChild(document.createTextNode(artistString));
+                  newLI.appendChild(songP);
+                  newLI.appendChild(artistP);
+                  resultList.appendChild(newLI);
+                }
+
+
+                var isTouchDevice = 'ontouchstart' in document.documentElement;
+
+                $(".resultItem").mousedown(function(event) {
+                    if (isTouchDevice == false) {
+                        console.log("mouse down");
+                    }
+                });
+                $(".resultItem").mouseup(function(event) {
+                    if (isTouchDevice == false) {
+                        console.log("mouse up");
+                    }
+                });
+
+                $('.resultItem').on('touchstart', function(event){
+                    if (isTouchDevice)  {
+                        var touchedItem = $(this);
+                        touchedItem.css('background', '#3498db');
+                        var holdButton = function(){
+                          if (confirm('Would you like to add this song to the queue?')){
+                            var uri = event.currentTarget.id;
+                            var song = event.currentTarget.children[0].innerHTML;
+                            var artist = event.currentTarget.children[1].innerHTML;
+                            $('.resultItem').css('background', '#ededed');
+                            addToQueue(uri, song, artist);
+                          }else{
+                            clearTimeout(timeoutId);
+                            touchedItem.css('background', '#ededed');
+                          }
+                        };
+                        timeoutId = setTimeout(holdButton, 750);
+                    }
+                }).on('touchend', function(event){
+                    if (isTouchDevice)  {
+                        clearTimeout(timeoutId);
+                    }
+                    $(this).css('background', '#ededed');
+                });
+              },
+              error: function(res, error) {
+                  console.log("error")
+              }
+      });
+    }
+
+    function addToQueue(uri, song, artist){
+      var access_token = getCookie('access_token');
+      if (!uri || !song || !artist){
+        return;
+      }
+      if (!access_token){
+        alert("You are unauthorized to do this!");
+        return;
+      }
+
+      $.ajax({
+              type: "POST",
+              url: '/addtoqueue',
+              data: {uri: uri, song: song, artist: artist, access_token: access_token},
+              dataType: 'json',
+              success: function(data) {
+                console.log(data.result);
+              },
+              error: function(res, error) {
+                var result = JSON.parse(res.responseText);
+                alert(result.result);
+              }
+      });
+
+    }
+
+
+    function getQueue(){
+      var access_token = getCookie('access_token');
+      $.ajax({
+              type: "POST",
+              url: '/queue',
+              data: {access_token: access_token},
+              dataType: 'json',
+              success: function(data) {
+                //console.log(data);
+                var duration = data.result[0].duration;
+                var progress = data.result[0].progress;
+                var id = data.result[0].id;
+                var percent = (duration && progress) ? (progress * 100 / duration) : 0;
+                $('#queueList').empty();
+                var queueList = document.getElementById('queueList');
+                if (data.result.length == 1){
+                  $('#queueMsg').text('Queue is Empty');
+                }else{
+                  $('#queueMsg').text('');
+                  for (var i = 1;i < data.result.length;i++){
+                    var newLI = document.createElement("li");
+                    var songP = document.createElement("p");
+                    var artistP = document.createElement("p");
+
+                    songP.setAttribute("class", "songP");
+                    artistP.setAttribute("class", "artistP");
+                    songP.appendChild(document.createTextNode(data.result[i].name));
+                    artistP.appendChild(document.createTextNode(data.result[i].artists));
+                    if (i == 1){
+                      newLI.setAttribute("id", 'progressDiv');
+                      newLI.style.background = 'linear-gradient(to right, #2ecc71 '+(percent)+'%, #ededed '+(percent)+'%)';
+                    }
+                    newLI.appendChild(songP);
+                    newLI.appendChild(artistP);
+                    newLI.setAttribute("class", "queueItem");
+                    queueList.appendChild(newLI);
+                  }
+                }
+
+              },
+              error: function(res, error) {
+                  $('#queueMsg').text(JSON.parse(res.responseText).result);
+              }
+      });
+    }
+  </script>
+  <script>
+      (function() {
+
+        var access_token = getCookie('access_token');
+        var refresh_token = getCookie('refresh_token');
+        var error = getCookie('error');
+
+        if (error) {
+          alert('There was an error during the authentication');
+        } else {
+          if (access_token) {
+
+            //check if valid, redo session if not
+
+
+            //console.log(access_token);
+            //console.log(refresh_token);
+
+
+
+
+            setInterval(getQueue, 1000);
+            $("#loginBox").css("visibility", "hidden");
+            $(".container").css("visibility", "visible");
+          } else {
+            $(".container").css("visibility", "hidden");
+            $("#loginBox").css("visibility", "visible");
+          }
+        }
+      })();
+    </script>
+  <script>
+    (function(){
+
+      $(document).ready(function(){
+
+      	$('ul.tabs li').click(function(){
+      		var tab_id = $(this).attr('data-tab');
+
+      		$('ul.tabs li').removeClass('current');
+      		$('.tab-content').removeClass('current');
+
+      		$(this).addClass('current');
+      		$("#"+tab_id).addClass('current');
+      	})
+
+      })
+
+    })();
+  </script>
+  <script>
+    (function(){
+      let username = getCookie('username');
+      if (username == ""){
+        window.location.replace("/");
+      }
+    })();
+  </script>
+  <script src="login.js" type="text/javascript"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js" type="text/javascript"></script>
+  <script src="https://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+  <script src="jquery.ui.touch-punch.min.js"></script>
+</body>
+</html>

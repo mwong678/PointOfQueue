@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+</head>
+<body>
+
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:700,600' rel='stylesheet' type='text/css'>
+  <link href='style.css' rel='stylesheet' type='text/css'>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js" type="text/javascript"></script>
+  <script src="https://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+  <script src="jquery.ui.touch-punch.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <script>
+    $( function() {
+      $('.searchBar').submit(function () {
+       searchSongs();
+       return false;
+      });
+    } );
+  </script>
+  <div id="tabs" class="container">
+    <label id="roomLabel"></label>
+    <label id="playlistLabel"></label>
+    <a onclick="deleteRoom()" id="deleteRoom"><div class="btn3">Delete Room</div></a>
+  <ul class="tabs">
+    <li class="tab-link current" data-tab="tab-1">Queue</li>
+    <li class="tab-link" data-tab="tab-2">Search</li>
+  </ul>
+
+  <div id="tab-1" class="tab-content current">
+    <label id="queueMsg"></label>
+    <ul id = "queueList">
+    </ul>
+  </div>
+  <div id="tab-2" class="tab-content">
+    <form class="searchBar" >
+      <input type="text" id="searchText" placeholder="Search..." name="search">
+      <button type="button" onclick="searchSongs()"><i class="fa fa-search"></i></button>
+
+      <label id="resultMsg" class="error"></label>
+      <ul id=resultList>
+      </ul>
+    </form>
+  </div>
+</div>
+  <div id ="loginBox" class="box">
+  <h1>Dashboard</h1>
+
+  <input id ="roomField" type="name" name="name" placeholder="enter room code" value="" class="room" />
+  <a onclick="findRoom()" ><div id="findRoom">Find</div></a>
+  <label id="roomError" class="error"></label>
+  <br/>
+  <label id="orLabel">OR</label>
+  <br/>
+  <a onclick="window.location.href='/createroom'" id="createRoom"><div class="btn">Create Room</div></a>
+  <br />
+  <label id="successMsg" class="success"></label>
+  </div>
+
+  <script>
+
+    function getCookie(cname) {
+      var name = cname + "=";
+      var decodedCookie = decodeURIComponent(document.cookie);
+      var ca = decodedCookie.split(';');
+      for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return "";
+    }
+    function deleteAllCookies() {
+      var cookies = document.cookie.split(";");
+
+      for (var i = 0; i < cookies.length; i++) {
+          var cookie = cookies[i];
+          var eqPos = cookie.indexOf("=");
+          var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+          document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      }
+    }
+
+    function setErrors(json){
+      var nameError = document.getElementById('nameError');
+      var passwordError = document.getElementById('passwordError');
+      var successMsg = document.getElementById('successMsg');
+
+      if (json.name){
+        nameError.innerHTML = json.name;
+      }else{
+        nameError.innerHTML = '';
+      }
+
+      if (json.password){
+        passwordError.innerHTML = json.password;
+      }else{
+        passwordError.innerHTML = '';
+      }
+
+      if (json.success){
+        successMsg.innerHTML = json.success;
+      }else{
+        successMsg.innerHTML = '';
+      }
+    }
+
+    function createRoom(){
+      $.ajax({
+              type: "GET",
+              url: '/createroom',
+              dataType: 'json',
+              success: function(data) {
+                  console.log(data);
+              },
+              error: function(res, error) {
+                  var result = JSON.parse(res.responseText);
+                  console.log(result);
+              }
+      });
+    }
+
+    function deleteRoom(){
+      if (confirm("Are you sure?")){
+        $.ajax({
+                type: "GET",
+                url: '/deleteroom',
+                dataType: 'json',
+                success: function(data) {
+                    console.log(data);
+                    if (data.result == 'Success'){
+                      location.reload();
+                    }
+                },
+                error: function(res, error) {
+                    var result = JSON.parse(res.responseText);
+                    alert(result);
+                }
+        });
+      }
+    }
+
+    function findRoom(){
+      let code = document.getElementById('roomField').value;
+      if (code == ""){
+        $("#roomError").text("Please enter a code");
+        return;
+      }else{
+        $("#roomError").text();
+      }
+
+      $.ajax({
+              type: "POST",
+              url: '/findroom',
+              data: {code: code},
+              dataType: 'json',
+              success: function(data) {
+                  console.log(data);
+                  $("#roomError").text();
+                  location.reload();
+              },
+              error: function(res, error) {
+                  var result = JSON.parse(res.responseText);
+                  console.log(result);
+                  $("#roomError").text(result.result);
+              }
+      });
+    }
+
+    function searchSongs(){
+      var query = document.getElementById('searchText').value;
+      var access_token = getCookie('access_token');
+      var refresh_token = getCookie('refresh_token');
+      var room_code = getCookie('room_code');
+      var owner = getCookie('owner');
+      var username = getCookie('username');
+
+      if (query.length == 0){
+        return;
+      }
+      if (!access_token || !refresh_token){
+        alert("You are unauthorized!");
+        location.reload();
+        return;
+      }
+      if (!username){
+        alert("You are not logged in!");
+        deleteAllCookies();
+        location.reload();
+        return;
+      }
+      $.ajax({
+              type: "POST",
+              url: '/search',
+              data: {
+                      query: query,
+                      access_token: access_token,
+                      refresh_token: refresh_token,
+                      username: username
+                    },
+              dataType: 'json',
+              success: function(data) {
+                if (data.result == "Retry"){
+                  alert("Please Refresh the page");
+                  /*
+                  if (owner == username){
+                  if (confirm('Session expired, would you like to extend?')){
+                    $.ajax({
+                            type: "POST",
+                            url: '/refreshtoken',
+                            data: {
+                                    access_token: access_token,
+                                    refresh_token: refresh_token,
+                                    username: username
+                                  },
+                            dataType: 'json',
+                            success: function(data) {
+                              //reload
+                            },
+                            error: function(res, error) {
+                              var result = JSON.parse(res.responseText);
+                              alert(result.result);
+                            }
+                    });
+                  }else{
+                    //delete all cookies so they go back to dashboard, delte room
+                    //and playlist
+                    $.ajax({
+                            type: "POST",
+                            url: '/deleteroom',
+                            data: {
+                                    room_code: room_code
+                                  },
+                            dataType: 'json',
+                            success: function(data) {
+                              //reload
+                            },
+                            error: function(res, error) {
+                              var result = JSON.parse(res.responseText);
+                              alert(result.result);
+                            }
+                    });
+                  }
+                }else{
+                  alert("Session expired, please contact room owner")
+                }
+                  */
+                  return;
+                }
+                $('#resultList').empty();
+                var resultList = document.getElementById('resultList');
+                var i;
+                for (i = 0;i < data.result.length;i++){
+                  var newLI = document.createElement("li");
+                  var songP = document.createElement("p");
+                  var artistP = document.createElement("p");
+                  var artistString = "";
+                  var j;
+
+                  for (j = 0; j < data.result[i].artists.length; j++){
+                    if (j > 0){
+                      artistString += ', ';
+                    }
+                    artistString += data.result[i].artists[j];
+                  }
+
+                  newLI.setAttribute("class", "resultItem");
+                  newLI.setAttribute("id", data.result[i].uri);
+                  songP.setAttribute("class", "songP");
+                  artistP.setAttribute("class", "artistP");
+                  songP.appendChild(document.createTextNode(data.result[i].name));
+                  artistP.appendChild(document.createTextNode(artistString));
+                  newLI.appendChild(songP);
+                  newLI.appendChild(artistP);
+                  resultList.appendChild(newLI);
+                }
+
+
+                var isTouchDevice = 'ontouchstart' in document.documentElement;
+
+                $(".resultItem").mousedown(function(event) {
+                    if (isTouchDevice == false) {
+                        console.log("mouse down");
+                    }
+                });
+                $(".resultItem").mouseup(function(event) {
+                    if (isTouchDevice == false) {
+                        console.log("mouse up");
+                    }
+                });
+
+                $('.resultItem').on('touchstart', function(event){
+                    if (isTouchDevice)  {
+                        var touchedItem = $(this);
+                        touchedItem.css('background', '#3498db');
+                        var holdButton = function(){
+                          if (confirm('Would you like to add this song to the queue?')){
+                            var uri = event.currentTarget.id;
+                            var song = event.currentTarget.children[0].innerHTML;
+                            var artist = event.currentTarget.children[1].innerHTML;
+                            $('.resultItem').css('background', '#ededed');
+                            addToQueue(uri, song, artist);
+                          }else{
+                            clearTimeout(timeoutId);
+                            touchedItem.css('background', '#ededed');
+                          }
+                        };
+                        timeoutId = setTimeout(holdButton, 750);
+                    }
+                }).on('touchend', function(event){
+                    if (isTouchDevice)  {
+                        clearTimeout(timeoutId);
+                    }
+                    $(this).css('background', '#ededed');
+                });
+              },
+              error: function(res, error) {
+                  var message = JSON.parse(res.responseText);
+                  alert(message.result);
+              }
+      });
+    }
+
+    function addToQueue(uri, song, artist){
+      var access_token = getCookie('access_token');
+      var refresh_token = getCookie('refresh_token');
+      var username = getCookie('username');
+      if (!uri || !song || !artist){
+        return;
+      }
+      if (!access_token || !refresh_token){
+        alert("You are unauthorized!");
+        location.reload();
+        return;
+      }
+      if (!username){
+        alert("You are not logged in!");
+        deleteAllCookies();
+        location.reload();
+        return;
+      }
+
+      $.ajax({
+              type: "POST",
+              url: '/addtoqueue',
+              data: {uri: uri, song: song, artist: artist},
+              dataType: 'json',
+              success: function(data) {
+                console.log(data.result);
+              },
+              error: function(res, error) {
+                var result = JSON.parse(res.responseText);
+                alert(result.result);
+              }
+      });
+
+    }
+
+
+    function getQueue(){
+      var access_token = getCookie('access_token');
+      var refresh_token = getCookie('refresh_token');
+      var username = getCookie('username');
+      if (!access_token || !refresh_token){
+        alert("You are unauthorized!");
+        location.reload();
+        return;
+      }
+      if (!username){
+        alert("You are not logged in!");
+        deleteAllCookies();
+        location.reload();
+        return;
+      }
+      let room_code = getCookie("room_code");
+      $.ajax({
+              type: "POST",
+              url: '/queue',
+              data: JSON.stringify({}),
+              dataType: 'json',
+              success: function(data) {
+
+                var duration = data.result.currentTrack.duration;
+                var progress = data.result.currentTrack.progress;
+                var id = data.result.currentTrack.uri;
+                var percent = (duration && progress) ? (progress * 100 / duration) : 0;
+                $('#queueList').empty();
+                var queueList = document.getElementById('queueList');
+                if (data.result.queue.length == 0){
+                  $('#queueMsg').text('Queue is Empty');
+                }else{
+                  $('#queueMsg').text('');
+                  for (var i = 0;i < data.result.queue.length;i++){
+                    let song = data.result.queue[i];
+                    var newLI = document.createElement("li");
+                    var songP = document.createElement("p");
+                    var artistP = document.createElement("p");
+
+                    songP.setAttribute("class", "songP");
+                    artistP.setAttribute("class", "artistP");
+                    songP.appendChild(document.createTextNode(song.name));
+                    artistP.appendChild(document.createTextNode(song.artists));
+                    if (i == 0){
+                      newLI.setAttribute("id", 'progressDiv');
+                      newLI.style.background = 'linear-gradient(to right, #2ecc71 '+(percent)+'%, #ededed '+(percent)+'%)';
+                    }
+                    newLI.appendChild(songP);
+                    newLI.appendChild(artistP);
+                    newLI.setAttribute("class", "queueItem");
+                    queueList.appendChild(newLI);
+                  }
+                }
+
+              },
+              error: function(res, error) {
+                  $('#queueMsg').text(JSON.parse(res.responseText).result);
+              }
+      });
+    }
+  </script>
+  <script>
+      (function() {
+
+        let username = getCookie('username');
+        if (username == ""){
+          alert("You are not logged in!");
+          deleteAllCookies();
+          window.location.replace("/");
+        }
+
+        let room_code = getCookie("room_code");
+        if (room_code == ""){
+          $("#roomLabel").text();
+          $(".container").css("visibility", "hidden");
+          $("#loginBox").css("visibility", "visible");
+          return;
+        }
+        //add room validation?
+        $("#roomLabel").text("Room Code: " + room_code);
+
+        let room_owner = getCookie('room_owner');
+        if (username == room_owner){
+          $("#playlistLabel").text("Playlist Name: " + getCookie('playlist_name'));
+          $("#deleteRoom").css("visibility", "visible");
+        }else{
+          $("#playlistLabel").text("");
+          $("#deleteRoom").css("visibility", "hidden");
+        }
+
+        var access_token = getCookie('access_token');
+        var refresh_token = getCookie('refresh_token');
+        var error = getCookie('error');
+
+        if (error) {
+          alert('There was an error during the authentication');
+        } else {
+          if (access_token && refresh_token) {
+            setInterval(getQueue, 1000);
+            $("#loginBox").css("visibility", "hidden");
+            $(".container").css("visibility", "visible");
+          } else {
+            $(".container").css("visibility", "hidden");
+            $("#loginBox").css("visibility", "visible");
+          }
+        }
+      })();
+    </script>
+  <script>
+    (function(){
+
+      $(document).ready(function(){
+
+      	$('ul.tabs li').click(function(){
+      		var tab_id = $(this).attr('data-tab');
+
+      		$('ul.tabs li').removeClass('current');
+      		$('.tab-content').removeClass('current');
+
+      		$(this).addClass('current');
+      		$("#"+tab_id).addClass('current');
+      	})
+
+      })
+
+    })();
+  </script>
+  <script src="login.js" type="text/javascript"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js" type="text/javascript"></script>
+  <script src="https://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+  <script src="jquery.ui.touch-punch.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+</head>
+<body>
+
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:700,600' rel='stylesheet' type='text/css'>
+  <link href='style.css' rel='stylesheet' type='text/css'>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js" type="text/javascript"></script>
+  <script src="https://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+  <script src="jquery.ui.touch-punch.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+  <br/>
+  <br/>
+  <br/>
+  <div id ="loginBox" class="box">
+  <h1>Sign Up</h1>
+
+  <input id="usernameField" type="name" name="name" placeholder="username" value="" class="email" />
+  <label id="usernameError" class="error"></label>
+  <input id ="passwordField" type="password" name="password" placeholder="password" value="" class="email" />
+  <label id="passwordError" class="error"></label>
+  <br/>
+  <br/>
+  <a onclick="signUp()" id="signUp"><div class="btn">Sign Up</div></a>
+  <br />
+  <label id="successMsg" class="success"></label>
+  <label id="errorMsg" class="error"></label>
+  <br />
+  </div>
+
+  <script>
+  function signUp(){
+    var username = document.getElementById("usernameField").value;
+    var password = document.getElementById("passwordField").value;
+    var usernameError = document.getElementById('usernameError');
+    var passwordError = document.getElementById('passwordError');
+    var successMsg = document.getElementById('successMsg');
+    var errorMsg = document.getElementById('errorMsg');
+
+    if (!username){
+      usernameError.innerHTML = "Please enter a username.";
+      return;
+    }else if (username.length < 4){
+      usernameError.innerHTML = "Username must be at least 4 characters.";
+      return;
+    }else{
+      usernameError.innerHTML = "";
+    }
+
+    if (!password){
+      passwordError.innerHTML = "Please enter a password.";
+      return;
+    }else if (password.length < 6){
+      passwordError.innerHTML = "Password must be at least 6 characters.";
+      return;
+    }else{
+      passwordError.innerHTML = "";
+    }
+
+    $.ajax({
+            type: "POST",
+            url: '/signup',
+            data: {username: username, password: password},
+            dataType: 'json',
+            success: function(data) {
+                successMsg.innerHTML = data.result;
+                errorMsg.innerHTML = "";
+                //redirect
+                window.location.replace("/");
+            },
+            error: function(res, error) {
+                  var result = JSON.parse(res.responseText);
+                  console.log(result.result);
+                  successMsg.innerHTML = "";
+                  errorMsg.innerHTML = result.result;
+            }
+    });
+  }
+  </script>
+
+  <script src="login.js" type="text/javascript"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js" type="text/javascript"></script>
+  <script src="https://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+  <script src="jquery.ui.touch-punch.min.js"></script>
+</body>
+</html>
