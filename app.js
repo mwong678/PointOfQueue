@@ -899,6 +899,7 @@ function updateQueues(){
                     getRoomCodeInDB(code).then(function(roomResult){
                       if (roomResult){
                         var lock = roomResult.queueLock;
+                        console.log("isLocked: " + lock);
                         if (!lock){
                           deleteFromPlaylist(deleteOptions);
                         }
