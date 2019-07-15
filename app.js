@@ -612,7 +612,7 @@ app.post('/addtoqueue', function(req, res) {
     request.get(getCurrentOptions, function(error, response, body) {
       if (!error && response.statusCode === 200) {
           //if body is null that means no avail devices
-          if (body){
+          if (body && body.item){
             let currPlaylistArray = (body.context) ? body.context.uri.split(":") : null;
             let currPlaylist = (currPlaylistArray) ? currPlaylistArray[currPlaylistArray.length - 1] : null;
             let progress = body.progress_ms;
@@ -621,22 +621,21 @@ app.post('/addtoqueue', function(req, res) {
             let newCurrTrack = {progress: progress, duration: duration, uri: id};
             updateCurrTrack(room_code, newCurrTrack).then(function(roomResult){
                 if (roomResult){
-                  if (playlist_id != currPlaylist){
-                    console.log("Different context, will start play on queue.");
-                    updateRoomLock(room_code, true).then(function(lockResult){
-                      if (lockResult){
-                        console.log("*****************LOCKED*****************");
+                  updateRoomLock(room_code, true).then(function(lockResult){
+                    if (lockResult){
+                      console.log("*****************LOCKED*****************");
+                      if (playlist_id != currPlaylist){
                         addSongToQueue(false);
                       }else{
-                        res.status(404);
-                        res.send({
-                          result: "Error locking room, try again."
-                        });
+                        addSongToQueue(body.is_playing);
                       }
-                    });
-                  }else{
-                    addSongToQueue(body.is_playing);
-                  }
+                    }else{
+                      res.status(404);
+                      res.send({
+                        result: "Error locking room, try again."
+                      });
+                    }
+                  });
                 }else{
                   res.status(404);
                   res.send({
