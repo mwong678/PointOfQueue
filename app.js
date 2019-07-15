@@ -685,8 +685,18 @@ app.post('/addtoqueue', function(req, res) {
               };
               playSong(playSongOptions);
             }else{
-              res.send({
-                result: "Added " + song + " by " + artist + " to the queue"
+              updateRoomLock(room_code, false).then(function(lockResult){
+                if (lockResult){
+                  console.log("*****************UNLOCKED*****************");
+                  res.send({
+                    result: "Added " + song + " by " + artist + " to the queue"
+                  });
+                }else{
+                  res.status(404);
+                  res.send({
+                    result: "Error unlocking room, try again."
+                  });
+                }
               });
             }
         }else{
