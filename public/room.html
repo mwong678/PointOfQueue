@@ -208,49 +208,6 @@
               success: function(data) {
                 if (data.result == "Retry"){
                   alert("Please Refresh the page");
-                  /*
-                  if (owner == username){
-                  if (confirm('Session expired, would you like to extend?')){
-                    $.ajax({
-                            type: "POST",
-                            url: '/refreshtoken',
-                            data: {
-                                    access_token: access_token,
-                                    refresh_token: refresh_token,
-                                    username: username
-                                  },
-                            dataType: 'json',
-                            success: function(data) {
-                              //reload
-                            },
-                            error: function(res, error) {
-                              var result = JSON.parse(res.responseText);
-                              alert(result.result);
-                            }
-                    });
-                  }else{
-                    //delete all cookies so they go back to dashboard, delte room
-                    //and playlist
-                    $.ajax({
-                            type: "POST",
-                            url: '/deleteroom',
-                            data: {
-                                    room_code: room_code
-                                  },
-                            dataType: 'json',
-                            success: function(data) {
-                              //reload
-                            },
-                            error: function(res, error) {
-                              var result = JSON.parse(res.responseText);
-                              alert(result.result);
-                            }
-                    });
-                  }
-                }else{
-                  alert("Session expired, please contact room owner")
-                }
-                  */
                   return;
                 }
                 $('#resultList').empty();
@@ -418,7 +375,10 @@
 
               },
               error: function(res, error) {
-                  $('#queueMsg').text(JSON.parse(res.responseText).result);
+                  if (JSON.parse(res.responseText).result == "Error getting room"){
+                    alert("Room doesn't exist!");
+                    location.reload();
+                  }
               }
       });
     }
@@ -440,7 +400,7 @@
           $("#loginBox").css("visibility", "visible");
           return;
         }
-        //add room validation?
+
         $("#roomLabel").text("Room Code: " + room_code);
 
         let room_owner = getCookie('room_owner');

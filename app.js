@@ -1,27 +1,3 @@
-
-//todo:
-//refresh tokens
-
-
-//add to queue - > work out with db
-//queue -serverside job
-/*
-User
-{
-  username
-  password
-  access_token
-  refresh_token
-}
-
-Room
-{
-  code
-  owner
-  playlist
-}
-*/
-
 const express = require('express');
 const request = require('request');
 const fs = require('fs')
@@ -761,8 +737,14 @@ app.get('/queue', function(req, res) {
       });
     }else{
       res.status(404);
+      res.cookie("access_token", '');
+      res.cookie("refresh_token", '');
+      res.cookie("room_code", '');
+      res.cookie("room_owner", '');
+      res.cookie("playlist_name", '');
+      res.cookie("playlist", '');
       res.send({
-        result: "Error getting queue"
+        result: "Error getting room"
       });
     }
   });
@@ -897,18 +879,18 @@ function updateQueues(){
                     },
                     json: true
                   }
-
+                  console.log("isPlaying: " + isPlaying);
+                  console.log("Progress: " + progress);
+                  console.log("ID: " + id);
+                  console.log("# songs to delete: " + toDelete.length);
+                  console.log("currTrackFound: " + currTrackFound);
+                  console.log();
                   if (toDelete.length > 0 && (isPlaying || id === undefined)){
                     getRoomCodeInDB(code).then(function(roomResult){
                       if (roomResult){
                         var lock = roomResult.queueLock;
                         console.log("isLocked: " + lock);
-                        console.log("isPlaying: " + isPlaying);
-                        console.log("Progress: " + progress);
-                        console.log("ID: " + id);
-                        console.log("# songs to delete: " + toDelete.length);
-                        console.log("currTrackFound: " + currTrackFound);
-                        console.log();
+
                         if (!lock){
                           deleteFromPlaylist(deleteOptions);
                         }
