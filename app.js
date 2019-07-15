@@ -898,18 +898,17 @@ function updateQueues(){
                     json: true
                   }
 
-                  console.log("isPlaying: " + isPlaying);
-                  console.log("Progress: " + progress);
-                  console.log("ID: " + id);
-                  console.log("# songs to delete: " + toDelete.length);
-                  console.log("currTrackFound: " + currTrackFound);
-                  console.log();
-
                   if (toDelete.length > 0 && (isPlaying || id === undefined)){
                     getRoomCodeInDB(code).then(function(roomResult){
                       if (roomResult){
                         var lock = roomResult.queueLock;
                         console.log("isLocked: " + lock);
+                        console.log("isPlaying: " + isPlaying);
+                        console.log("Progress: " + progress);
+                        console.log("ID: " + id);
+                        console.log("# songs to delete: " + toDelete.length);
+                        console.log("currTrackFound: " + currTrackFound);
+                        console.log();
                         if (!lock){
                           deleteFromPlaylist(deleteOptions);
                         }
