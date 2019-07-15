@@ -733,7 +733,7 @@ app.post('/addtoqueue', function(req, res) {
   return;
 });
 
-app.post('/queue', function(req, res) {
+app.get('/queue', function(req, res) {
   var room_code = req.cookies["room_code"];
   var req_access_token = req.cookies["access_token"];
   var req_refresh_token = req.cookies["refresh_token"];

@@ -380,9 +380,8 @@
       }
       let room_code = getCookie("room_code");
       $.ajax({
-              type: "POST",
+              type: "GET",
               url: '/queue',
-              data: JSON.stringify({}),
               dataType: 'json',
               success: function(data) {
 
