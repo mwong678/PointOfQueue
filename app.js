@@ -601,11 +601,13 @@ app.post('/addtoqueue', function(req, res) {
                     if (lockResult){
                       console.log("*****************LOCKED*****************");
                       if (playlist_id != currPlaylist){
+                        console.log("Different context, changing");
                         addSongToQueue(false);
                       }else{
                         addSongToQueue(body.is_playing);
                       }
                     }else{
+                      console.log("Error locking room, try again.");
                       res.status(404);
                       res.send({
                         result: "Error locking room, try again."
@@ -613,6 +615,7 @@ app.post('/addtoqueue', function(req, res) {
                     }
                   });
                 }else{
+                  console.log("Error updating current song, try again.");
                   res.status(404);
                   res.send({
                     result: "Error updating current song, try again."
@@ -620,6 +623,7 @@ app.post('/addtoqueue', function(req, res) {
                 }
             });
           }else{
+            console.log("No available devices. Turn one on");
             res.status(404);
             res.send({
               result: "No available devices. Turn one on"
@@ -632,6 +636,7 @@ app.post('/addtoqueue', function(req, res) {
               console.log("*****************LOCKED*****************");
               addSongToQueue(false);
             }else{
+              console.log("Error locking room, try again.");
               res.status(404);
               res.send({
                 result: "Error locking room, try again."
@@ -639,6 +644,7 @@ app.post('/addtoqueue', function(req, res) {
             }
           });
       }else{
+        console.log(response.body.error.status + " " + response.body.error.message);
         res.status(404);
         res.send({
           result: response.body.error.status + " " + response.body.error.message
@@ -668,6 +674,7 @@ app.post('/addtoqueue', function(req, res) {
                     result: "Added " + song + " by " + artist + " to the queue"
                   });
                 }else{
+                  console.log("Error unlocking room, try again.");
                   res.status(404);
                   res.send({
                     result: "Error unlocking room, try again."
@@ -676,6 +683,7 @@ app.post('/addtoqueue', function(req, res) {
               });
             }
         }else{
+          console.log(response.body.error.status + " " + response.body.error.message);
           res.status(404);
           res.send({
             result: response.body.error.status + " " + response.body.error.message
@@ -699,6 +707,7 @@ app.post('/addtoqueue', function(req, res) {
               result: "Added and now playing " + song + " by " + artist + " to the queue"
             });
           }else{
+            console.log("Error unlocking room, try again.");
             res.status(404);
             res.send({
               result: "Error unlocking room, try again."
@@ -706,6 +715,7 @@ app.post('/addtoqueue', function(req, res) {
           }
         });
       }else{
+        console.log(response.body.error.status + " " + response.body.error.message);
         res.status(404);
         res.send({
           result: response.body.error.status + " " + response.body.error.message + ", turn one on."
@@ -736,6 +746,7 @@ app.get('/queue', function(req, res) {
         result: result
       });
     }else{
+      console.log("Error getting room")
       res.status(404);
       res.cookie("access_token", '');
       res.cookie("refresh_token", '');
@@ -879,18 +890,27 @@ function updateQueues(){
                     },
                     json: true
                   }
-                  console.log("isPlaying: " + isPlaying);
-                  console.log("Progress: " + progress);
-                  console.log("ID: " + id);
-                  console.log("# songs to delete: " + toDelete.length);
-                  console.log("currTrackFound: " + currTrackFound);
-                  console.log();
+                  if (!process.env.PORT){
+                    console.log("isPlaying: " + isPlaying);
+                    console.log("Progress: " + progress);
+                    console.log("ID: " + id);
+                    console.log("# songs to delete: " + toDelete.length);
+                    console.log("currTrackFound: " + currTrackFound);
+                    console.log();
+                  }
                   if (toDelete.length > 0 && (isPlaying || id === undefined)){
                     getRoomCodeInDB(code).then(function(roomResult){
                       if (roomResult){
                         var lock = roomResult.queueLock;
+                        if (process.env.PORT){
+                          console.log("isPlaying: " + isPlaying);
+                          console.log("Progress: " + progress);
+                          console.log("ID: " + id);
+                          console.log("# songs to delete: " + toDelete.length);
+                          console.log("currTrackFound: " + currTrackFound);
+                        }
                         console.log("isLocked: " + lock);
-
+                        console.log();
                         if (!lock){
                           deleteFromPlaylist(deleteOptions);
                         }

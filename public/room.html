@@ -20,6 +20,10 @@
       });
     } );
   </script>
+  <div id="accountInfo">
+    <label id="signedIn"></label>
+    <a onclick="logOut()" id="logout"><div class="logoutbtn">Logout</div></a>
+  </div>
   <div id="tabs" class="container">
     <label id="roomLabel"></label>
     <label id="playlistLabel"></label>
@@ -144,6 +148,11 @@
                 }
         });
       }
+    }
+
+    function logOut(){
+      deleteAllCookies();
+      location.reload();
     }
 
     function findRoom(){
@@ -388,10 +397,15 @@
 
         let username = getCookie('username');
         if (username == ""){
-          alert("You are not logged in!");
+          $("#signedIn").text("");
+          $("#accountInfo").css("display", "none");
           deleteAllCookies();
           window.location.replace("/");
+          return;
         }
+
+        $("#signedIn").text("Signed in as: " + username);
+        $("#accountInfo").css("display", "block");
 
         let room_code = getCookie("room_code");
         if (room_code == ""){
@@ -402,6 +416,7 @@
         }
 
         $("#roomLabel").text("Room Code: " + room_code);
+        $("#accountInfo").css("display", "none");
 
         let room_owner = getCookie('room_owner');
         if (username == room_owner){
