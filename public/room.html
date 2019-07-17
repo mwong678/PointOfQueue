@@ -28,6 +28,7 @@
     <label id="roomLabel"></label>
     <label id="playlistLabel"></label>
     <a onclick="deleteRoom()" id="deleteRoom"><div class="btn3">Delete Room</div></a>
+    <a onclick="exitRoom()" id="exitRoom"><div class="btn3">Exit Room</div></a>
   <ul class="tabs">
     <li class="tab-link current" data-tab="tab-1">Queue</li>
     <li class="tab-link" data-tab="tab-2">Search</li>
@@ -135,6 +136,26 @@
         $.ajax({
                 type: "GET",
                 url: '/deleteroom',
+                dataType: 'json',
+                success: function(data) {
+                    console.log(data);
+                    if (data.result == 'Success'){
+                      location.reload();
+                    }
+                },
+                error: function(res, error) {
+                    var result = JSON.parse(res.responseText);
+                    alert(result);
+                }
+        });
+      }
+    }
+
+    function exitRoom(){
+      if (confirm("Are you sure?")){
+        $.ajax({
+                type: "GET",
+                url: '/exitroom',
                 dataType: 'json',
                 success: function(data) {
                     console.log(data);
@@ -421,10 +442,12 @@
         let room_owner = getCookie('room_owner');
         if (username == room_owner){
           $("#playlistLabel").text("Playlist Name: " + getCookie('playlist_name'));
-          $("#deleteRoom").css("visibility", "visible");
+          $("#deleteRoom").css("display", "block");
+          $("#exitRoom").css("display", "none");
         }else{
           $("#playlistLabel").text("");
-          $("#deleteRoom").css("visibility", "hidden");
+          $("#deleteRoom").css("display", "none");
+          $("#exitRoom").css("display", "block");
         }
 
         var access_token = getCookie('access_token');
