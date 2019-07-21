@@ -12,6 +12,7 @@
   <script src="https://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
   <script src="jquery.ui.touch-punch.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href="toastr.css" rel="stylesheet"/>
   <script>
     $( function() {
       $('.searchBar').submit(function () {
@@ -20,9 +21,13 @@
       });
     } );
   </script>
+    <script src="toastr.js"></script>
   <div id="accountInfo">
     <label id="signedIn"></label>
     <a onclick="logOut()" id="logout"><div class="logoutbtn">Logout</div></a>
+    <br />
+    <br />
+    <br />
   </div>
   <div id="tabs" class="container">
     <label id="roomLabel"></label>
@@ -52,7 +57,6 @@
 </div>
   <div id ="loginBox" class="box">
   <h1>Dashboard</h1>
-
   <input id ="roomField" type="name" name="name" placeholder="enter room code" value="" class="room" />
   <a onclick="findRoom()" ><div id="findRoom">Find</div></a>
   <label id="roomError" class="error"></label>
@@ -145,7 +149,7 @@
                 },
                 error: function(res, error) {
                     var result = JSON.parse(res.responseText);
-                    alert(result);
+                    toastr.error(result);
                 }
         });
       }
@@ -165,7 +169,7 @@
                 },
                 error: function(res, error) {
                     var result = JSON.parse(res.responseText);
-                    alert(result);
+                    toastr.error(result);
                 }
         });
       }
@@ -215,12 +219,10 @@
         return;
       }
       if (!access_token || !refresh_token){
-        alert("You are unauthorized!");
         location.reload();
         return;
       }
       if (!username){
-        alert("You are not logged in!");
         deleteAllCookies();
         location.reload();
         return;
@@ -237,7 +239,7 @@
               dataType: 'json',
               success: function(data) {
                 if (data.result == "Retry"){
-                  alert("Please Refresh the page");
+                  toastr.error("Please Refresh the page");
                   return;
                 }
                 $('#resultList').empty();
@@ -282,6 +284,25 @@
                     }
                 });
 
+                var tapped = false
+
+                $(".resultItem").on("touchstart",function(event){
+                    if(!tapped){
+                      tapped = setTimeout(function(){
+                          tapped=null
+                      }, 300);   //wait 300ms then run single click code
+                    } else {    //tapped within 300ms of last tap. double tap
+                      clearTimeout(tapped); //stop single tap callback
+                      tapped = null
+                      var touchedItem = $(this);
+                      var uri = event.currentTarget.id;
+                      var song = event.currentTarget.children[0].innerHTML;
+                      var artist = event.currentTarget.children[1].innerHTML;
+                      addToQueue(uri, song, artist);
+                    }
+                    event.preventDefault();
+                });
+                /*
                 $('.resultItem').on('touchstart', function(event){
                     if (isTouchDevice)  {
                         var touchedItem = $(this);
@@ -306,10 +327,12 @@
                     }
                     $(this).css('background', '#ededed');
                 });
+
+                */
               },
               error: function(res, error) {
                   var message = JSON.parse(res.responseText);
-                  alert(message.result);
+                  toastr.error(message.result);
               }
       });
     }
@@ -322,16 +345,17 @@
         return;
       }
       if (!access_token || !refresh_token){
-        alert("You are unauthorized!");
+        toastr.error("You are unauthorized!");
         location.reload();
         return;
       }
       if (!username){
-        alert("You are not logged in!");
+        toastr.error("You are not logged in!");
         deleteAllCookies();
         location.reload();
         return;
       }
+
 
       $.ajax({
               type: "POST",
@@ -340,10 +364,11 @@
               dataType: 'json',
               success: function(data) {
                 console.log(data.result);
+                toastr.success(data.result);
               },
               error: function(res, error) {
                 var result = JSON.parse(res.responseText);
-                alert(result.result);
+                toastr.error(result.result);
               }
       });
 
@@ -355,12 +380,12 @@
       var refresh_token = getCookie('refresh_token');
       var username = getCookie('username');
       if (!access_token || !refresh_token){
-        alert("You are unauthorized!");
+        toastr.error("You are unauthorized!");
         location.reload();
         return;
       }
       if (!username){
-        alert("You are not logged in!");
+        toastr.error("You are not logged in!");
         deleteAllCookies();
         location.reload();
         return;
@@ -406,7 +431,7 @@
               },
               error: function(res, error) {
                   if (JSON.parse(res.responseText).result == "Error getting room"){
-                    alert("Room doesn't exist!");
+                    toastr.error("Room doesn't exist!");
                     location.reload();
                   }
               }
@@ -427,12 +452,14 @@
 
         $("#signedIn").text("Signed in as: " + username);
         $("#accountInfo").css("display", "block");
+        $("#accountInfo").hide().fadeIn(1000);
 
         let room_code = getCookie("room_code");
         if (room_code == ""){
           $("#roomLabel").text();
-          $(".container").css("visibility", "hidden");
-          $("#loginBox").css("visibility", "visible");
+          $(".container").css("display", "none");
+          $("#loginBox").css("display", "block");
+          $("#loginBox").hide().fadeIn(1000);
           return;
         }
 
@@ -455,15 +482,18 @@
         var error = getCookie('error');
 
         if (error) {
-          alert('There was an error during the authentication');
+          toastr.error('There was an error during the authentication');
         } else {
           if (access_token && refresh_token) {
             setInterval(getQueue, 1000);
-            $("#loginBox").css("visibility", "hidden");
-            $(".container").css("visibility", "visible");
+            $("#loginBox").css("display", "none");
+            $(".container").css("display", "block");
+            $(".container").hide().fadeIn(1000);
+
           } else {
-            $(".container").css("visibility", "hidden");
-            $("#loginBox").css("visibility", "visible");
+            $(".container").css("display", "none");
+            $("#loginBox").css("display", "block");
+            $("#loginBox").hide().fadeIn(1000);
           }
         }
       })();
@@ -480,16 +510,39 @@
       		$('.tab-content').removeClass('current');
 
       		$(this).addClass('current');
-      		$("#"+tab_id).addClass('current');
-      	})
+      		$("#" + tab_id).addClass('current');
+      	});
 
-      })
+        toastr.options = {
+          "closeButton": false,
+          "debug": false,
+          "newestOnTop": false,
+          "progressBar": false,
+          "positionClass": "toast-top-center",
+          "preventDuplicates": false,
+          "onclick": null,
+          "showDuration": "300",
+          "hideDuration": "1000",
+          "timeOut": "1000",
+          "extendedTimeOut": "1000",
+          "showEasing": "swing",
+          "hideEasing": "linear",
+          "showMethod": "fadeIn",
+          "hideMethod": "fadeOut"
+        }
+
+      });
+
+
+      $('a').click(function(event) {
+          event.preventDefault();
+      });
 
     })();
   </script>
-  <script src="login.js" type="text/javascript"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js" type="text/javascript"></script>
   <script src="https://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
   <script src="jquery.ui.touch-punch.min.js"></script>
+  <script src="toastr.js"></script>
 </body>
 </html>

@@ -17,7 +17,7 @@ function field_focus(field, email)
 //Fade in dashboard box
 $(document).ready(function(){
     $('.box').hide().fadeIn(1000);
-    });
+});
 
 //Stop click event
 

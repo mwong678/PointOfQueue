@@ -988,7 +988,7 @@ function updateQueues() {
          }
         } else {
          console.log("Error getting current: ");
-         if (response.body) {
+         if (response && response.body) {
           console.log(response.body.error.status + ": " + response.body.error.message);
          } else {
           console.log(response);
