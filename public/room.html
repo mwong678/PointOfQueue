@@ -451,6 +451,20 @@
 
         let room_code = getCookie("room_code");
         if (room_code == ""){
+          $.ajax({
+                  type: "GET",
+                  url: '/checkforroom',
+                  dataType: 'json',
+                  success: function(data) {
+                    if (data.result == "Found"){
+                      location.reload();
+                    }
+                  },
+                  error: function(res, error) {
+                      var result = JSON.parse(res.responseText);
+                      toastr.error(result);
+                  }
+          });
           $("#roomLabel").text();
           $(".container").css("display", "none");
           $("#loginBox").css("display", "block");
