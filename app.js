@@ -296,7 +296,7 @@ app.get('/createroom', function(req, res) {
  if (!req.cookies['access_token'] || !req.cookies['refresh_token']) {
   var state = generateRandomString(16);
   res.cookie(stateKey, state);
-  var scope = 'user-read-private user-read-email playlist-modify-public user-read-currently-playing user-read-playback-state user-modify-playback-state';
+  var scope = 'user-read-private user-read-email playlist-modify-public playlist-modify-private user-read-currently-playing user-read-playback-state user-modify-playback-state';
   res.redirect('https://accounts.spotify.com/authorize?' +
    querystring.stringify({
     response_type: 'code',
@@ -1107,7 +1107,7 @@ mongo.connectToServer(function(err, client) {
  };
 
  //deleteRoom('qzch');
- //deleteRoom('KpUE');
+ //deleteRoom('EqO9');
  //deleteUser('mwong678');
  //deleteUser('matt_wong');
  //clearQueue("Og7t");
