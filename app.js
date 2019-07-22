@@ -667,7 +667,14 @@ app.post('/addtoqueue', function(req, res) {
          console.log("*****************LOCKED*****************");
          if (playlist_id != currPlaylist) {
           console.log("Different context, changing");
-          addSongToQueue(false);
+          var stopMusicOptions = {
+           url: 'https://api.spotify.com/v1/me/player/pause',
+           headers: {
+            'Authorization': 'Bearer ' + access_token
+           },
+           json: true
+          };
+          stopMusic(stopMusicOptions);
          } else {
           addSongToQueue(body.is_playing);
          }
@@ -793,6 +800,21 @@ app.post('/addtoqueue', function(req, res) {
    return;
   });
  };
+
+ var stopMusic = function(stopMusicOptions){
+   request.put(stopMusicOptions, function(error, response, body) {
+     if (!error && response.statusCode === 204) {
+       console.log("Paused Music");
+       addSongToQueue(false);
+     }else{
+       console.log(response.body.error.status + " " + response.body.error.message);
+       res.status(404);
+       res.send({
+        result: response.body.error.status + " " + response.body.error.message + ", turn one on."
+       });
+     }
+   });
+ }
 
  getCurrentlyPlaying();
  return;
