@@ -224,12 +224,34 @@ app.post('/', [
   }
 
   if (password === result.password) {
-   res.cookie("username", username);
-   res.status(200);
-   res.send({
-    username: username
+   getAllRooms().then(function(rooms){
+     if (rooms && rooms.length > 0) {
+       for (var i = 0;i < rooms.length; i++){
+         let currRoom = rooms[i];
+         var code = currRoom.code;
+         var owner = currRoom.owner;
+         var access_token = currRoom.access_token;
+         var refresh_token = currRoom.refresh_token;
+         var playlistURI = currRoom.playlist;
+         var playlistName = currRoom.playlist_name;
+         if (username == owner){
+           res.cookie("access_token", access_token);
+           res.cookie("refresh_token", refresh_token);
+           res.cookie("room_code", code);
+           res.cookie("room_owner", owner);
+           res.cookie("playlist_name", playlistName);
+           res.cookie("playlist", playlistURI.split(":")[2]);
+         }
+       }
+     }
+
+     res.cookie("username", username);
+     res.status(200);
+     res.send({
+      username: username
+     });
+     return;
    });
-   return;
   } else {
    res.status(400);
    res.send({
