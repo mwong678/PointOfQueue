@@ -234,8 +234,8 @@
                     },
               dataType: 'json',
               success: function(data) {
-                if (data.result == "Retry"){
-                  toastr.info("Please Refresh the page");
+                if (data.result.length == 0){
+                  toastr.info("No results found.");
                   return;
                 }
                 $('#resultList').empty();

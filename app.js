@@ -510,18 +510,10 @@ app.post('/search', function(req, res) {
     result: finalResult
    });
   } else {
-   if (response.body.error.status == 401 && response.body.error.message.includes('expired')) {
-
-    res.send({
-     result: "Retry"
-    });
-
-   } else {
     res.status(response.body.error.status);
     res.send({
      result: response.body.error.status + " " + response.body.error.message
     });
-   }
   }
  });
 
@@ -1079,7 +1071,7 @@ mongo.connectToServer(function(err, client) {
  };
 
  //deleteRoom('qzch');
- //deleteRoom('BUDZ');
+ //deleteRoom('KpUE');
  //deleteUser('mwong678');
  //deleteUser('matt_wong');
  //clearQueue("Og7t");
