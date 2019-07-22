@@ -125,12 +125,10 @@
               type: "GET",
               url: '/createroom',
               dataType: 'json',
-              success: function(data) {
-                  console.log(data);
-              },
+              success: function(data) {},
               error: function(res, error) {
                   var result = JSON.parse(res.responseText);
-                  console.log(result);
+                  toastr.error(result);
               }
       });
     }
@@ -142,7 +140,6 @@
                 url: '/deleteroom',
                 dataType: 'json',
                 success: function(data) {
-                    console.log(data);
                     if (data.result == 'Success'){
                       location.reload();
                     }
@@ -162,7 +159,6 @@
                 url: '/exitroom',
                 dataType: 'json',
                 success: function(data) {
-                    console.log(data);
                     if (data.result == 'Success'){
                       location.reload();
                     }
@@ -239,7 +235,7 @@
               dataType: 'json',
               success: function(data) {
                 if (data.result == "Retry"){
-                  toastr.error("Please Refresh the page");
+                  toastr.info("Please Refresh the page");
                   return;
                 }
                 $('#resultList').empty();
@@ -363,7 +359,6 @@
               data: {uri: uri, song: song, artist: artist},
               dataType: 'json',
               success: function(data) {
-                console.log(data.result);
                 toastr.success(data.result);
               },
               error: function(res, error) {

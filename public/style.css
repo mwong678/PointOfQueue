@@ -63,12 +63,12 @@ h1{
 }
 
 #roomLabel {
-  display: block; /* add this */
+  display: block;
   padding: 5px;
 }
 
 #playlistLabel {
-  display: block; /* add this */
+  display: block;
   padding: 5px;
 }
 
@@ -326,7 +326,6 @@ form.searchBar input[type=text] {
   background: #f1f1f1;
 }
 
-/* Style the submit button */
 form.searchBar button {
   margin-top: 20px;
   float: left;
@@ -336,7 +335,7 @@ form.searchBar button {
   color: white;
   font-size: 17px;
   border: 1px solid grey;
-  border-left: none; /* Prevent double borders */
+  border-left: none;
   cursor: pointer;
 }
 
@@ -344,7 +343,6 @@ form.searchBar button:hover {
   background: #0b7dda;
 }
 
-/* Clear floats */
 form.searchBar::after {
   content: "";
   clear: both;
