@@ -182,11 +182,16 @@ var stateKey = 'spotify_auth_state';
 var app = express();
 
 var https_redirect = function (req, res, next) {
-       if (req.headers["x-forwarded-proto"] === "https" && process.env.PORT) {
+       if (req.headers["x-forwarded-proto"] === "https") {
           next();
        } else {
-          console.log('HTTP DETECTED REDIRECTING');
-          res.redirect('https://' + req.headers.host + req.url);
+         if (process.env.PORT){
+           //only redirect when deployed
+           console.log('HTTP DETECTED REDIRECTING');
+           res.redirect('https://' + req.headers.host + req.url);
+         }else{
+           next();
+         }
        }
 };
 

@@ -180,9 +180,11 @@
       let code = document.getElementById('roomField').value;
       if (code == ""){
         $("#roomError").text("Please enter a code");
+        $("#roomError").css('display', 'block');
         return;
       }else{
         $("#roomError").text();
+        $("#roomError").css('display', 'none');
       }
 
       $.ajax({
@@ -191,14 +193,14 @@
               data: {code: code},
               dataType: 'json',
               success: function(data) {
-                  console.log(data);
                   $("#roomError").text();
+                  $("#roomError").css('display', 'none');
                   location.reload();
               },
               error: function(res, error) {
                   var result = JSON.parse(res.responseText);
-                  console.log(result);
                   $("#roomError").text(result.result);
+                  $("#roomError").css('display', 'block');
               }
       });
     }
@@ -468,6 +470,7 @@
                   }
           });
           $("#roomLabel").text();
+          $("#roomError").css('display', 'none');
           $(".container").css("display", "none");
           $("#loginBox").css("display", "block");
           $("#loginBox").hide().fadeIn(1000);
