@@ -187,15 +187,16 @@ app.use(express.static(__dirname + '/public'))
  .use(express.urlencoded({
   extended: true
  }))
- .use(bodyParser.json());
-
- app.get('*', function(req, res) {
-      console.log("REDIRECT");
-     res.redirect('https://' + req.headers.host + req.url);
-
-     // Or, if you don't want to automatically detect the domain name from the request header, you can hard code it:
-     // res.redirect('https://example.com' + req.url);
- });
+ .use(bodyParser.json())
+ .use (function (req, res, next) {
+        if (req.headers["x-forwarded-proto"] === "https") {
+                console.log('HTTPS DETECTED');
+                next();
+        } else {
+                console.log('HTTP DETECTED REDIRECTING');
+                res.redirect('https://' + req.headers.host + req.url);
+        }
+});
 
 app.post('/', [
  check('username').not().isEmpty(),
