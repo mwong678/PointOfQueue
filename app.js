@@ -191,7 +191,7 @@ app.use(express.static(__dirname + '/public'))
 
  app.use(function (req, res, next) {
       console.log('middleware...');
-      console.log();
+      console.log(req.secure);
       if (req.secure) {
         console.log('HTTPS detected');
         next();
