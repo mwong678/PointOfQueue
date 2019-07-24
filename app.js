@@ -189,7 +189,8 @@ app.use(express.static(__dirname + '/public'))
  }))
  .use(bodyParser.json())
  .use(function (req, res, next) {
-      console.log('middleware...')
+      console.log('middleware...');
+      console.log();
       if (req.secure) {
         console.log('HTTPS detected');
         next();
