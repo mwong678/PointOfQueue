@@ -187,16 +187,17 @@ app.use(express.static(__dirname + '/public'))
  .use(express.urlencoded({
   extended: true
  }))
- .use(bodyParser.json())
- .use(function (req, res, next) {
-        console.log('MIDDLEWARE');
-        if (req.headers["x-forwarded-proto"] === "https") {
-                console.log('HTTPS DETECTED');
-                next();
-        } else {
-                console.log('HTTP DETECTED REDIRECTING');
-                res.redirect('https://' + req.headers.host + req.url);
-        }
+ .use(bodyParser.json());
+
+app.all('*', function (req, res, next) {
+       console.log('MIDDLEWARE');
+       if (req.headers["x-forwarded-proto"] === "https") {
+               console.log('HTTPS DETECTED');
+               next();
+       } else {
+               console.log('HTTP DETECTED REDIRECTING');
+               res.redirect('https://' + req.headers.host + req.url);
+       }
 });
 
 app.post('/', [
@@ -1134,7 +1135,6 @@ mongo.connectToServer(function(err, client) {
   console.log(items);
  });
 
- console.log('MIDDLEWARE');
  setInterval(updateQueues, 1000);
  app.listen(port);
 });
