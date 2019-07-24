@@ -181,6 +181,19 @@ function refreshToken(refresh_token, callback) {
 var stateKey = 'spotify_auth_state';
 var app = express();
 
+var https_redirect = function (req, res, next) {
+       console.log('MIDDLEWARE');
+       if (req.headers["x-forwarded-proto"] === "https") {
+               console.log('HTTPS DETECTED');
+               next();
+       } else {
+               console.log('HTTP DETECTED REDIRECTING');
+               res.redirect('https://' + req.headers.host + req.url);
+       }
+};
+
+app.use(https_redirect);
+
 app.use(express.static(__dirname + '/public'))
  .use(cors())
  .use(cookieParser())
@@ -190,16 +203,6 @@ app.use(express.static(__dirname + '/public'))
  .use(bodyParser.json());
 
 
-app.get('*', function (req, res, next) {
-       console.log('MIDDLEWARE');
-       if (req.headers["x-forwarded-proto"] === "https") {
-               console.log('HTTPS DETECTED');
-               next();
-       } else {
-               console.log('HTTP DETECTED REDIRECTING');
-               res.redirect('https://' + req.headers.host + req.url);
-       }
-});
 
 
 app.post('/', [
