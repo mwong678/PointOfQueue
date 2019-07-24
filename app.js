@@ -190,11 +190,12 @@ app.use(express.static(__dirname + '/public'))
  .use(bodyParser.json());
 
 app.use(function (req, res, next) {
-      console.log('http detected');
       if (req.secure) {
+        console.log('HTTPS detected');
         next();
       } else {
         if (process.env.PORT){
+          console.log('HTTP detected');
           res.redirect('https://' + req.headers.host + req.url);
         }
       }
