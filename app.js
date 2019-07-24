@@ -188,7 +188,8 @@ app.use(express.static(__dirname + '/public'))
   extended: true
  }))
  .use(bodyParser.json())
- .use (function (req, res, next) {
+ .use(function (req, res, next) {
+        console.log('MIDDLEWARE');
         if (req.headers["x-forwarded-proto"] === "https") {
                 console.log('HTTPS DETECTED');
                 next();
@@ -1133,6 +1134,7 @@ mongo.connectToServer(function(err, client) {
   console.log(items);
  });
 
+ console.log('MIDDLEWARE');
  setInterval(updateQueues, 1000);
  app.listen(port);
 });
