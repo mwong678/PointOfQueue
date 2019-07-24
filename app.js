@@ -4,6 +4,7 @@ const fs = require('fs')
 const https = require('https')
 const cors = require('cors');
 const properties = require('./properties.json');
+const sslRedirect = require('heroku-ssl-redirect');
 
 var mongo = require('./mongo.js');
 var myDB, userCollection, roomCollection;
@@ -187,9 +188,11 @@ app.use(express.static(__dirname + '/public'))
  .use(express.urlencoded({
   extended: true
  }))
- .use(bodyParser.json());
+ .use(bodyParser.json())
+ .use(sslRedirect());
 
-app.all('*', function (req, res, next) {
+/*
+app.get('*', function (req, res, next) {
        console.log('MIDDLEWARE');
        if (req.headers["x-forwarded-proto"] === "https") {
                console.log('HTTPS DETECTED');
@@ -199,6 +202,7 @@ app.all('*', function (req, res, next) {
                res.redirect('https://' + req.headers.host + req.url);
        }
 });
+*/
 
 app.post('/', [
  check('username').not().isEmpty(),
