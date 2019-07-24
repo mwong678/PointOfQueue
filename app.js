@@ -1084,6 +1084,10 @@ function requireHTTPS(req, res, next) {
   if (!req.secure && req.get('x-forwarded-proto') !== 'https' && process.env.PORT) {
     console.log('redirecting...');
     return res.redirect('https://' + req.get('host') + req.url);
+  }else{
+    console.log(!req.secure);
+    console.log(req.get('x-forwarded-proto'));
+    console.log(process.env.PORT);
   }
   next();
 }
