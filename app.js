@@ -1079,6 +1079,13 @@ function updateQueues() {
  });
 }
 
+function requireHTTPS(req, res, next) {
+  // The 'x-forwarded-proto' check is for Heroku
+  if (!req.secure && req.get('x-forwarded-proto') !== 'https' && process.env.PORT) {
+    return res.redirect('https://' + req.get('host') + req.url);
+  }
+  next();
+}
 
 var port = process.env.PORT || 8081;
 console.log('Listening on ' + port);
@@ -1123,5 +1130,6 @@ mongo.connectToServer(function(err, client) {
  });
 
  setInterval(updateQueues, 1000);
+ app.use(requireHTTPS);
  app.listen(port);
 });
