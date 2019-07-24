@@ -128,7 +128,6 @@
                     window.location.replace("/room");
                 },
                 error: function(res, error) {
-                    console.log(res);
                     var result = JSON.parse(res.responseText);
                     console.log(result);
                     setErrors(result);

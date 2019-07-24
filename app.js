@@ -225,6 +225,8 @@ app.post('/', [
  const post = req.body;
  const username = post.username;
  const password = post.password;
+ console.log(username)
+ console.log(password)
 
  isUserNameInDB(username).then(function(result) {
   if (result == null) {
