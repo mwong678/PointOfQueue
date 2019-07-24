@@ -189,19 +189,12 @@ app.use(express.static(__dirname + '/public'))
  }))
  .use(bodyParser.json());
 
- app.use(function (req, res, next) {
-      console.log('middleware...');
-      console.log(req.secure);
-      if (req.secure) {
-        console.log('HTTPS detected');
-        next();
-      } else {
-        if (process.env.PORT){
-          console.log('HTTP detected');
-          res.redirect('https://' + req.headers.host + req.url);
-        }
-      }
-});
+ app.get('*', function(req, res) {
+     res.redirect('https://' + req.headers.host + req.url);
+
+     // Or, if you don't want to automatically detect the domain name from the request header, you can hard code it:
+     // res.redirect('https://example.com' + req.url);
+ });
 
 app.post('/', [
  check('username').not().isEmpty(),
