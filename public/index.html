@@ -3,7 +3,7 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Point Of Queue</title>
 </head>
 
 <body>
@@ -17,7 +17,6 @@
     <script>
       $( function() {
         $('.logIn').submit(function () {
-          console.log("login")
          submitCreds();
          return false;
         });
@@ -34,17 +33,14 @@
         <input id="passwordField" type="password" name="password" placeholder="password" value="" class="email" />
         <label id="passwordError" class="error"></label>
         </form>
-        <br/>
-        <br/>
         <a onclick="window.location.href='/signup'" id="signUp">
             <div class="btn">Sign Up</div>
         </a>
         <a onclick="submitCreds()" id="signIn">
             <div class="btn">Sign In</div>
         </a>
-        <br />
         <label id="successMsg" class="success"></label>
-        <br />
+        <p><span style="color:#525252">Point of Queue allows you to create your own Spotify(must have premium) queue, and allow others to add songs! Perfect for car rides, parties, etc.</span></p>
     </div>
 
     <script>
@@ -70,6 +66,30 @@
             var successMsg = document.getElementById('successMsg');
 
             if (json.username) {
+                $('#usernameError').text(json.username);
+                $('#usernameError').css('display', 'block');
+            } else {
+              $('#usernameError').text('');
+              $('#usernameError').css('display', 'none');
+            }
+
+            if (json.password) {
+              $('#passwordError').text(json.password);
+              $('#passwordError').css('display', 'block');
+            } else {
+              $('#passwordError').text('');
+              $('#passwordError').css('display', 'none');
+            }
+
+            if (json.success) {
+              $('#successMsg').text(json.success);
+              $('#successMsg').css('display', 'block');
+            } else {
+              $('#successMsg').text('');
+              $('#successMsg').css('display', 'none');
+            }
+            /*
+            if (json.username) {
                 usernameError.innerHTML = json.username;
             } else {
                 usernameError.innerHTML = '';
@@ -86,6 +106,7 @@
             } else {
                 successMsg.innerHTML = '';
             }
+            */
         }
 
         function submitCreds() {
@@ -125,6 +146,9 @@
     <script>
         $(document).ready(function() {
             $('.box').hide().fadeIn(1000);
+            $('#successMsg').css('display', 'none');
+            $('#usernameError').css('display', 'none');
+            $('#passwordError').css('display', 'none');
         });
         $('a').click(function(event) {
             event.preventDefault();

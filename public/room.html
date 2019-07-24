@@ -400,8 +400,10 @@
                 var queueList = document.getElementById('queueList');
                 if (data.result.queue.length == 0){
                   $('#queueMsg').text('Queue is Empty');
+                  $('#queueMsg').css('display', 'block');
                 }else{
                   $('#queueMsg').text('');
+                  $('#queueMsg').css('display', 'none');
                   for (var i = 0;i < data.result.queue.length;i++){
                     let song = data.result.queue[i];
                     var newLI = document.createElement("li");

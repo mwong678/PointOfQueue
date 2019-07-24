@@ -512,8 +512,6 @@ app.post('/search', function(req, res) {
  var refresh_token = req.body.refresh_token;
  var username = req.body.username;
 
- console.log('performing search...' + query);
-
  var authOptions = {
   url: 'https://api.spotify.com/v1/search?' + query,
   headers: {
@@ -702,9 +700,13 @@ app.post('/addtoqueue', function(req, res) {
            },
            json: true
           };
-          stopMusic(stopMusicOptions);
+          if (body.is_playing){
+            stopMusic(stopMusicOptions);
+          }else{
+            addSongToQueue(body.is_playing);
+          }
          } else {
-          addSongToQueue(body.is_playing);
+           addSongToQueue(body.is_playing);
          }
         } else {
          console.log("Error locking room, try again.");
@@ -822,7 +824,7 @@ app.post('/addtoqueue', function(req, res) {
     console.log(response.body.error.status + " " + response.body.error.message);
     res.status(404);
     res.send({
-     result: response.body.error.status + " " + response.body.error.message + ", turn one on."
+     result: response.body.error.status + " " + response.body.error.message
     });
    }
    return;
@@ -838,7 +840,7 @@ app.post('/addtoqueue', function(req, res) {
        console.log(response.body.error.status + " " + response.body.error.message);
        res.status(404);
        res.send({
-        result: response.body.error.status + " " + response.body.error.message + ", turn one on."
+        result: response.body.error.status + " " + response.body.error.message
        });
      }
    });
