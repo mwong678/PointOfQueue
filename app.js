@@ -189,6 +189,17 @@ app.use(express.static(__dirname + '/public'))
  }))
  .use(bodyParser.json());
 
+app.use(function (req, res, next) {
+      console.log('http detected');
+      if (req.secure) {
+        next();
+      } else {
+        if (process.env.PORT){
+          res.redirect('https://' + req.headers.host + req.url);
+        }
+      }
+});
+
 app.post('/', [
  check('username').not().isEmpty(),
  check('password').not().isEmpty()
@@ -1123,12 +1134,5 @@ mongo.connectToServer(function(err, client) {
  });
 
  setInterval(updateQueues, 1000);
- app.use (function (req, res, next) {
-        if (req.secure) {
-          next();
-        } else {
-          res.redirect('https://' + req.headers.host + req.url);
-        }
- });
  app.listen(port);
 });
