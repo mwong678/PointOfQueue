@@ -300,6 +300,10 @@ app.get('/checkforroom', function(req, res){
          result: "Not found"
         });
       }
+    }else{
+      res.send({
+       result: "No rooms"
+      });
     }
   });
 });
