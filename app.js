@@ -693,7 +693,7 @@ app.post('/addtoqueue', function(req, res) {
  var turnOffRepeat = function() {
   request.put(turnOffRepeatOptions);
  }
-
+ /*
  var getCurrentlyPlaying = function() {
   request.get(getCurrentOptions, function(error, response, body) {
    if (!error && response.statusCode === 200) {
@@ -756,6 +756,7 @@ app.post('/addtoqueue', function(req, res) {
     }
    } else if (!error && response.statusCode === 204) {
     console.log("No track is playing");
+    if (body && body.item) {
     updateRoomLock(room_code, true).then(function(lockResult) {
      if (lockResult) {
       console.log("*****************LOCKED*****************");
@@ -768,6 +769,89 @@ app.post('/addtoqueue', function(req, res) {
       });
      }
     });
+  }else{
+    console.log("No available devices. Turn one on");
+    res.status(404);
+    res.send({
+     result: "No available devices. Turn one on"
+    });
+  }
+   } else {
+    console.log(response.body.error.status + " " + response.body.error.message);
+    res.status(404);
+    res.send({
+     result: response.body.error.status + " " + response.body.error.message
+    });
+   }
+   return;
+  });
+ };
+ */
+
+ var getCurrentlyPlaying = function() {
+  request.get(getCurrentOptions, function(error, response, body) {
+   if (!error && response && (response.statusCode === 200 || response.statusCode === 204)) {
+    //if body is null that means no avail devices
+    if (body && body.item) {
+     let currPlaylistArray = (body.context) ? body.context.uri.split(":") : null;
+     let currPlaylist = (currPlaylistArray) ? currPlaylistArray[currPlaylistArray.length - 1] : null;
+     let progress = body.progress_ms;
+     let duration = body.item.duration_ms;
+     let id = body.item.uri;
+     let newCurrTrack = {
+      progress: progress,
+      duration: duration,
+      uri: id
+     };
+     updateCurrTrack(room_code, newCurrTrack).then(function(roomResult) {
+      if (roomResult) {
+       updateRoomLock(room_code, true).then(function(lockResult) {
+        if (lockResult) {
+         console.log("*****************LOCKED*****************");
+         if (playlist_id != currPlaylist) {
+          console.log("Different context, changing");
+          var stopMusicOptions = {
+           url: 'https://api.spotify.com/v1/me/player/pause',
+           headers: {
+            'Authorization': 'Bearer ' + access_token
+           },
+           json: true
+          };
+          if (body.is_playing){
+            stopMusic(stopMusicOptions);
+          }else{
+            addSongToQueue(false); // adds and plays
+          }
+        } else {
+          if (body.is_playing){
+             addSongToQueue(true);
+          }else{
+            addSongToQueue(id);
+          }
+         }
+        } else {
+         console.log("Error locking room, try again.");
+         res.status(404);
+         res.send({
+          result: "Error locking room, try again."
+         });
+        }
+       });
+      } else {
+       console.log("Error updating current song, try again.");
+       res.status(404);
+       res.send({
+        result: "Error updating current song, try again."
+       });
+      }
+     });
+    } else {
+     console.log("No available devices. Turn one on");
+     res.status(404);
+     res.send({
+      result: "No available devices. Turn one on"
+     });
+    }
    } else {
     console.log(response.body.error.status + " " + response.body.error.message);
     res.status(404);
@@ -984,7 +1068,7 @@ function updateQueues() {
           };
           updateCurrTrack(code, newCurrTrack);
          } else {
-          console.log("No available devices. Turn on one.");
+          //console.log("No available devices. Turn on one.");
           return;
          }
 
