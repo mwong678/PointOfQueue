@@ -49,7 +49,7 @@
   </div>
   <div id="tab-2" class="tab-content">
     <form class="searchBar" >
-      <input type="text" id="searchText" placeholder="Search..." name="search">
+      <input type="text" id="searchText" placeholder="Search..." name="search" oninput="searchSongs()">
       <button type="button" onclick="searchSongs()"><i class="fa fa-search"></i></button>
       <label id="resultMsg" class="error"></label>
       <ul id=resultList>
@@ -190,11 +190,11 @@
                 var deviceList = document.getElementById('deviceList');
                 var device_id = getCookie('device_id');
                 $("#deviceList").empty();
-                var selected = 0;
+                var selected = -1;
                 option = document.createElement('option');
                 option.value = "None";
                 option.innerHTML = "Select...";
-                deviceList.appendChild(option);
+                //deviceList.appendChild(option);
                   if (data && data.devices.length > 0){
                     var devices = data.devices;
                     for (var i = 0; i < devices.length; i++){
@@ -202,7 +202,7 @@
                       deviceName = currDevice.name;
                       deviceId = currDevice.id;
                       if (currDevice.is_active){
-                        selected = i + 1;
+                        selected = i;
                       }
                       option = document.createElement('option');
                       option.value = deviceId;
@@ -211,11 +211,10 @@
                     }
                   }
                   deviceList.selectedIndex = selected;
-                  if (device_id != deviceList.options[deviceList.selectedIndex].value){
+
+                  if (selected == -1){
                     changeDevice();
                   }
-
-
               },
               error: function(res, error) {
                   var result = JSON.parse(res.responseText);

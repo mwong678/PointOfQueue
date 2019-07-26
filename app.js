@@ -664,7 +664,8 @@ app.post('/changedevice', function(req, res){
       });
      }
     });
-  }
+  };
+
   updateRoomDevice(room_code, device_id).then(function(deviceResult){
     if (deviceResult){
       var transferOptions = {
@@ -883,7 +884,6 @@ app.post('/addtoqueue', function(req, res) {
      }
     });
    } else {
-     console.log(response);
     console.log(response.body.error.status + " " + response.body.error.message);
     res.status(404);
     res.send({
@@ -907,7 +907,7 @@ app.post('/addtoqueue', function(req, res) {
        });
      }
    });
- }
+ };
 
  getCurrentlyPlaying();
  return;
