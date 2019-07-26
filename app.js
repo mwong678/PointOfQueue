@@ -111,6 +111,19 @@ async function updateRoomLock(code, lock) {
  return result;
 }
 
+async function updateRoomDevice(code, device_id) {
+ let query = {
+  code: code
+ };
+ let updated = {
+  $set: {
+   device_id: device_id
+  }
+ };
+ let result = await roomCollection.updateOne(query, updated);
+ return result;
+}
+
 async function updateRoomQueue(code, newQueue) {
  let query = {
   code: code
@@ -144,7 +157,8 @@ async function addRoomInDB(username, playlistURI, playlistName, access_token, re
    id: ''
   },
   access_token: access_token,
-  refresh_token: refresh_token
+  refresh_token: refresh_token,
+  device_id: ''
  }
  let insertResult = await roomCollection.insertOne(item);
  return insertResult ? code : null;
@@ -632,6 +646,48 @@ app.get('/exitroom', function(req, res) {
   });
 });
 
+app.post('/changedevice', function(req, res){
+  var device_id = req.body.device_id;
+  var room_code = req.cookies["room_code"];
+  var access_token = req.cookies["access_token"];
+  var transferMusic = function(transferOptions){
+    request.put(transferOptions, function(error, response, body) {
+     if (!error && response.statusCode == 204) {
+       res.cookie("device_id", device_id);
+       res.send({
+        result: "Device is set!"
+       });
+     } else {
+      res.status(404);
+      res.send({
+       result: "Error transferring music"
+      });
+     }
+    });
+  }
+  updateRoomDevice(room_code, device_id).then(function(deviceResult){
+    if (deviceResult){
+      var transferOptions = {
+       url: 'https://api.spotify.com/v1/me/player',
+       headers: {
+        'Authorization': 'Bearer ' + access_token
+       },
+       body: {
+        "device_ids": [device_id],
+        "play": true
+       },
+       json: true
+      };
+      transferMusic(transferOptions);
+    }else{
+      res.status(404);
+      res.send({
+       result: "Error changing room device, try again."
+      });
+    }
+  });
+});
+
 app.post('/addtoqueue', function(req, res) {
  var query = querystring.stringify({
   uris: req.body.uri
@@ -645,6 +701,7 @@ app.post('/addtoqueue', function(req, res) {
  var refresh_token = req.cookies["refresh_token"];
  var playlist_id = req.cookies["playlist"];
  var room_code = req.cookies["room_code"];
+ var device_id = req.cookies["device_id"];
 
  var addToQueueOptions = {
   url: 'https://api.spotify.com/v1/playlists/' + playlist_id + '/tracks?' + query,
@@ -656,14 +713,6 @@ app.post('/addtoqueue', function(req, res) {
 
  var getCurrentOptions = {
   url: 'https://api.spotify.com/v1/me/player/currently-playing',
-  headers: {
-   'Authorization': 'Bearer ' + access_token
-  },
-  json: true
- };
-
- var getDeviceOptions = {
-  url: 'https://api.spotify.com/v1/me/player/devices',
   headers: {
    'Authorization': 'Bearer ' + access_token
   },
@@ -697,7 +746,7 @@ app.post('/addtoqueue', function(req, res) {
  var getCurrentlyPlaying = function() {
   request.get(getCurrentOptions, function(error, response, body) {
    if (!error && response && (response.statusCode === 200 || response.statusCode === 204)) {
-    //if body is null that means no avail devices
+    //if body is null that means no ACTIVE devices
     if (body && body.item) {
      let currPlaylistArray = (body.context) ? body.context.uri.split(":") : null;
      let currPlaylist = (currPlaylistArray) ? currPlaylistArray[currPlaylistArray.length - 1] : null;
@@ -732,7 +781,8 @@ app.post('/addtoqueue', function(req, res) {
           if (body.is_playing){
              addSongToQueue(true);
           }else{
-            addSongToQueue(id);
+            //two cases, paused and end of playlist
+            addSongToQueue(id && (progress > 0));
           }
          }
         } else {
@@ -752,11 +802,7 @@ app.post('/addtoqueue', function(req, res) {
       }
      });
     } else {
-     console.log("No available devices. Turn one on");
-     res.status(404);
-     res.send({
-      result: "No available devices. Turn one on"
-     });
+      addSongToQueue(false);
     }
    } else {
     console.log(response.body.error.status + " " + response.body.error.message);
@@ -774,8 +820,11 @@ app.post('/addtoqueue', function(req, res) {
    if (!error && response.statusCode === 201) {
     console.log("Added " + song + " by " + artist + " with this uri: " + uri + " to the queue");
     if (!isPlaying) {
+     var songQuery = (device_id) ? '/?' + querystring.stringify({
+       device_id: device_id
+     }) : '';
      var playSongOptions = {
-      url: 'https://api.spotify.com/v1/me/player/play',
+      url: 'https://api.spotify.com/v1/me/player/play' + songQuery,
       headers: {
        'Authorization': 'Bearer ' + access_token
       },
@@ -834,6 +883,7 @@ app.post('/addtoqueue', function(req, res) {
      }
     });
    } else {
+     console.log(response);
     console.log(response.body.error.status + " " + response.body.error.message);
     res.status(404);
     res.send({
@@ -867,6 +917,7 @@ app.get('/queue', function(req, res) {
  var room_code = req.cookies["room_code"];
  var req_access_token = req.cookies["access_token"];
  var req_refresh_token = req.cookies["refresh_token"];
+ var req_device_id = req.cookies["device_id"];
  var result = {};
  getRoomCodeInDB(room_code).then(function(roomResult) {
   if (roomResult) {
@@ -875,6 +926,9 @@ app.get('/queue', function(req, res) {
    if (req_access_token != roomResult.access_token) {
     console.log("Changed to new access token in cookies!");
     res.cookie("access_token", roomResult.access_token);
+   }
+   if (req_device_id != roomResult.device_id){
+     res.cookie("device_id", roomResult.device_id);
    }
    res.send({
     result: result
@@ -888,6 +942,7 @@ app.get('/queue', function(req, res) {
    res.cookie("room_owner", '');
    res.cookie("playlist_name", '');
    res.cookie("playlist", '');
+   res.cookie("device_id", '');
    res.send({
     result: "Error getting room"
    });
