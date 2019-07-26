@@ -212,7 +212,7 @@
                   }
                   deviceList.selectedIndex = selected;
 
-                  if (selected == -1){
+                  if (selected == -1 || deviceList.options[deviceList.selectedIndex].value != device_id){
                     changeDevice();
                   }
               },
