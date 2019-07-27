@@ -3,7 +3,7 @@ const request = require('request');
 const fs = require('fs')
 const https = require('https')
 const cors = require('cors');
-const properties = (process.env.PORT) ? '' : require('./properties.json');
+//const properties = (process.env.PORT) ? '' : require('./properties.json');
 
 var mongo = require('./mongo.js');
 var myDB, userCollection, roomCollection;
