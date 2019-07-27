@@ -689,6 +689,7 @@ app.post('/changedevice', function(req, res){
   });
 });
 
+/*
 app.post('/addtoqueue', function(req, res) {
  var query = querystring.stringify({
   uris: req.body.uri
@@ -784,7 +785,7 @@ app.post('/addtoqueue', function(req, res) {
           }else{
             //two cases, paused and end of playlist
             //addSongToQueue(id && (progress > 0));
-            addSongToQueue(id );
+            addSongToQueue(id);
           }
          }
         } else {
@@ -899,6 +900,236 @@ app.post('/addtoqueue', function(req, res) {
        result: response.body.error.status + " " + response.body.error.message
       });
     }
+   }
+   return;
+  });
+ };
+
+ var stopMusic = function(stopMusicOptions){
+   request.put(stopMusicOptions, function(error, response, body) {
+     if (!error && response.statusCode === 204) {
+       console.log("Paused Music");
+       addSongToQueue(false);
+     }else{
+       console.log(response.body.error.status + " " + response.body.error.message);
+       res.status(404);
+       res.send({
+        result: response.body.error.status + " " + response.body.error.message
+       });
+     }
+   });
+ };
+
+ getCurrentlyPlaying();
+ return;
+});
+*/
+
+app.post('/addtoqueue', function(req, res) {
+ var query = querystring.stringify({
+  uris: req.body.uri
+ });
+
+ var song = req.body.song;
+ var artist = req.body.artist;
+ var uri = req.body.uri;
+ var username = req.cookies["username"];
+ var access_token = req.cookies["access_token"];
+ var refresh_token = req.cookies["refresh_token"];
+ var playlist_id = req.cookies["playlist"];
+ var room_code = req.cookies["room_code"];
+ var device_id = req.cookies["device_id"];
+
+ var addToQueueOptions = {
+  url: 'https://api.spotify.com/v1/playlists/' + playlist_id + '/tracks?' + query,
+  headers: {
+   'Authorization': 'Bearer ' + access_token
+  },
+  json: true
+ };
+
+ var getCurrentOptions = {
+  url: 'https://api.spotify.com/v1/me/player/currently-playing',
+  headers: {
+   'Authorization': 'Bearer ' + access_token
+  },
+  json: true
+ };
+
+ var turnOffShuffleOptions = {
+  url: 'https://api.spotify.com/v1/me/player/shuffle?state=false',
+  headers: {
+   'Authorization': 'Bearer ' + access_token
+  },
+  json: true
+ };
+
+ var turnOffRepeatOptions = {
+  url: 'https://api.spotify.com/v1/me/player/repeat?state=off',
+  headers: {
+   'Authorization': 'Bearer ' + access_token
+  },
+  json: true
+ };
+
+ var turnOffShuffle = function() {
+  request.put(turnOffShuffleOptions);
+ }
+
+ var turnOffRepeat = function() {
+  request.put(turnOffRepeatOptions);
+ }
+
+ var getCurrentlyPlaying = function() {
+  request.get(getCurrentOptions, function(error, response, body) {
+   if (!error && response && (response.statusCode === 200 || response.statusCode === 204)) {
+    //if body is null that means no ACTIVE devices
+    if (body && body.item) {
+     let currPlaylistArray = (body.context) ? body.context.uri.split(":") : null;
+     let currPlaylist = (currPlaylistArray) ? currPlaylistArray[currPlaylistArray.length - 1] : null;
+     let progress = body.progress_ms;
+     let duration = body.item.duration_ms;
+     let id = body.item.uri;
+     let newCurrTrack = {
+      progress: progress,
+      duration: duration,
+      uri: id
+     };
+     updateCurrTrack(room_code, newCurrTrack).then(function(roomResult) {
+      if (roomResult) {
+       updateRoomLock(room_code, true).then(function(lockResult) {
+        if (lockResult) {
+         console.log("*****************LOCKED*****************");
+         if (playlist_id != currPlaylist) {
+          console.log("Different context, changing");
+          var stopMusicOptions = {
+           url: 'https://api.spotify.com/v1/me/player/pause',
+           headers: {
+            'Authorization': 'Bearer ' + access_token
+           },
+           json: true
+          };
+          if (body.is_playing){
+            stopMusic(stopMusicOptions);
+          }else{
+            addSongToQueue(false); // adds and plays
+          }
+        } else {
+          if (body.is_playing){
+             addSongToQueue(true);
+          }else{
+            //two cases, paused and end of playlist
+            //addSongToQueue(id && (progress > 0));
+            addSongToQueue(id);
+          }
+         }
+        } else {
+         console.log("Error locking room, try again.");
+         res.status(404);
+         res.send({
+          result: "Error locking room, try again."
+         });
+        }
+       });
+      } else {
+       console.log("Error updating current song, try again.");
+       res.status(404);
+       res.send({
+        result: "Error updating current song, try again."
+       });
+      }
+     });
+    } else {
+      console.log("No available devices. Turn one on");
+      res.status(404);
+      res.send({
+       result: "No available devices. Turn one on"
+      });
+    }
+   } else {
+    console.log(response.body.error.status + " " + response.body.error.message);
+    res.status(404);
+    res.send({
+     result: response.body.error.status + " " + response.body.error.message
+    });
+   }
+   return;
+  });
+ };
+
+ var addSongToQueue = function(isPlaying) {
+  request.post(addToQueueOptions, function(error, response, body) {
+   if (!error && response.statusCode === 201) {
+    console.log("Added " + song + " by " + artist + " with this uri: " + uri + " to the queue");
+    if (!isPlaying) {
+     var songQuery = (device_id) ? '/?' + querystring.stringify({
+       device_id: device_id
+     }) : '';
+     var playSongOptions = {
+      url: 'https://api.spotify.com/v1/me/player/play',
+      headers: {
+       'Authorization': 'Bearer ' + access_token
+      },
+      body: {
+       "context_uri": "spotify:playlist:" + playlist_id
+      },
+      json: true
+     };
+     playSong(playSongOptions);
+    } else {
+     updateRoomLock(room_code, false).then(function(lockResult) {
+      if (lockResult) {
+       console.log("*****************UNLOCKED*****************");
+       res.send({
+        result: "Added " + song + " by " + artist + " to the queue"
+       });
+      } else {
+       console.log("Error unlocking room, try again.");
+       res.status(404);
+       res.send({
+        result: "Error unlocking room, try again."
+       });
+      }
+     });
+    }
+   } else {
+    console.log(response.body.error.status + " " + response.body.error.message);
+    res.status(404);
+    res.send({
+     result: response.body.error.status + " " + response.body.error.message
+    });
+   }
+   return;
+  });
+ };
+
+
+ var playSong = function(playSongOptions) {
+  request.put(playSongOptions, function(error, response, body) {
+   if (!error && response.statusCode === 204) {
+    turnOffShuffle();
+    turnOffRepeat();
+    updateRoomLock(room_code, false).then(function(lockResult) {
+     if (lockResult) {
+      console.log("Playing " + song + " by " + artist + " from the queue");
+      console.log("*****************UNLOCKED*****************");
+      res.send({
+       result: "Added and now playing " + song + " by " + artist + " to the queue"
+      });
+     } else {
+      console.log("Error unlocking room, try again.");
+      res.status(404);
+      res.send({
+       result: "Error unlocking room, try again."
+      });
+     }
+    });
+   } else {
+    console.log(response.body.error.status + " " + response.body.error.message);
+    res.status(404);
+    res.send({
+     result: response.body.error.status + " " + response.body.error.message
+    });
    }
    return;
   });
