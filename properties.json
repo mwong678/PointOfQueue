@@ -1,7 +1,0 @@
-{
-  "client_id" : "93172ee3214a4ffbb4c58151d5463892",
-  "client_secret" : "b67d3c80d1f646e6b0f6ea0272ef04f1",
-  "redirect_uri_local" : "http://localhost:8081/callback",
-  "redirect_uri_deploy" : "https://pointofqueue.io/callback",
-  "dbURI" : "mongodb+srv://admin:Mantis123%21@pointofqueue-zo4md.mongodb.net/poq?retryWrites=true&w=majority"
-}
