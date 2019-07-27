@@ -824,6 +824,7 @@ app.post('/addtoqueue', function(req, res) {
      var songQuery = (device_id) ? '/?' + querystring.stringify({
        device_id: device_id
      }) : '';
+     console.log(songQuery);
      var playSongOptions = {
       url: 'https://api.spotify.com/v1/me/player/play' + songQuery,
       headers: {
