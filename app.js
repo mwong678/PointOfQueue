@@ -1020,7 +1020,7 @@ app.post('/addtoqueue', function(req, res) {
           }else{
             //two cases, paused and end of playlist
             //addSongToQueue(id && (progress > 0));
-            addSongToQueue(id);
+            addSongToQueue(id && (progress > 0));
           }
          }
         } else {
