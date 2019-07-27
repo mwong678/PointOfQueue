@@ -675,7 +675,7 @@ app.post('/changedevice', function(req, res){
        },
        body: {
         "device_ids": [device_id],
-        "play": true
+        "play": false
        },
        json: true
       };
