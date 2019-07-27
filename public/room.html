@@ -204,8 +204,6 @@
                       option.value = deviceId;
                       option.innerHTML = deviceName;
                       deviceList.appendChild(option);
-                      console.log(currDevice.name);
-                      console.log(currDevice.is_active);
                     }
                   }
                   deviceList.selectedIndex = selected;
@@ -528,8 +526,8 @@
         let room_owner = getCookie('room_owner');
         if (username == room_owner){
           $("#playlistLabel").text("Playlist Name: " + getCookie('playlist_name'));
-          fetchDevices();
-          $("#deviceDiv").css("display", "block");
+          //fetchDevices();
+          $("#deviceDiv").css("display", "none");
           $("#deleteRoom").css("display", "block");
           $("#exitRoom").css("display", "none");
         }else{
