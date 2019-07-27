@@ -15,9 +15,9 @@ const {
  check,
  validationResult
 } = require('express-validator');
-const client_id = properties.client_id;
-const client_secret = properties.client_secret;
-const redirect_uri = (process.env.PORT) ? properties.redirect_uri_deploy : properties.redirect_uri_local;
+const client_id = (process.env.PORT) ? process.env.client_id : properties.client_id;
+const client_secret = (process.env.PORT) ? process.env.client_secret :  properties.client_secret;
+const redirect_uri = (process.env.PORT) ? process.env.redirect_uri : properties.redirect_uri_local;
 
 var generateRandomString = function(length) {
  var text = '';

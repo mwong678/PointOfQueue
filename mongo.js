@@ -1,6 +1,6 @@
 const properties = require('./properties.json');
 const MongoClient = require('mongodb').MongoClient;
-const dbURI = properties.dbURI;
+const dbURI = (process.env.PORT) ? process.env.dbURI : properties.dbURI;
 
 var _db;
 
