@@ -783,7 +783,8 @@ app.post('/addtoqueue', function(req, res) {
              addSongToQueue(true);
           }else{
             //two cases, paused and end of playlist
-            addSongToQueue(id && (progress > 0));
+            //addSongToQueue(id && (progress > 0));
+            addSongToQueue(id );
           }
          }
         } else {
@@ -803,7 +804,11 @@ app.post('/addtoqueue', function(req, res) {
       }
      });
     } else {
-      addSongToQueue(false);
+      console.log("No available devices. Turn one on");
+      res.status(404);
+      res.send({
+       result: "No available devices. Turn one on"
+      });
     }
    } else {
     console.log(response.body.error.status + " " + response.body.error.message);

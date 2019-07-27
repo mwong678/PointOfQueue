@@ -56,6 +56,7 @@
       </ul>
     </form>
   </div>
+  <a onclick="directions()" id="directions"><div class="directionsbtn">How to use</div></a>
   <a onclick="deleteRoom()" id="deleteRoom"><div class="deleteexitbtn">Delete Room</div></a>
   <a onclick="exitRoom()" id="exitRoom"><div class="deleteexitbtn">Exit Room</div></a>
 </div>
@@ -248,6 +249,15 @@
       });
     }
 
+    function directions(){
+      var message = "To start playing:\n" +
+      "1. Add a song to the queue\n" +
+      "2. Click on the playlist link\n" +
+      "3. Press play in Spotify to start the queue\n" +
+      "NOTE: this only has to be done for the first song, subsequent songs can just be queued normally";
+      alert(message);
+    }
+
     function searchSongs(){
       var query = document.getElementById('searchText').value;
       var access_token = getCookie('access_token');
@@ -371,6 +381,8 @@
               }
       });
     }
+
+
 
     function addToQueue(uri, song, artist){
       var access_token = getCookie('access_token');
@@ -533,11 +545,13 @@
           newA.href = "https://open.spotify.com/playlist/" + getCookie('playlist');
           $("#playlistLabel").append(newA);
           $("#deviceDiv").css("display", "none");
+          $("#directions").css("display", "block");
           $("#deleteRoom").css("display", "block");
           $("#exitRoom").css("display", "none");
         }else{
           $("#playlistLabel").text("");
           $("#deviceDiv").css("display", "none");
+          $("#directions").css("display", "none");
           $("#deleteRoom").css("display", "none");
           $("#exitRoom").css("display", "block");
         }
