@@ -210,7 +210,7 @@
                   deviceList.selectedIndex = selected;
 
                   if (selected == -1 || deviceList.options[deviceList.selectedIndex].value != device_id){
-                    changeDevice();
+                    //changeDevice();
                   }
               },
               error: function(res, error) {
@@ -544,7 +544,7 @@
           newA.appendChild(document.createTextNode(getCookie('playlist_name')));
           newA.href = "https://open.spotify.com/playlist/" + getCookie('playlist');
           $("#playlistLabel").append(newA);
-          $("#deviceDiv").css("display", "none");
+          $("#deviceDiv").css("display", "block");
           $("#directions").css("display", "block");
           $("#deleteRoom").css("display", "block");
           $("#exitRoom").css("display", "none");
