@@ -253,8 +253,8 @@
       var message = "To start playing:\n" +
       "1. Add a song to the queue\n" +
       "2. Click on the playlist link\n" +
-      "3. Press play in Spotify to start the queue\n" +
-      "NOTE: this only has to be done for the first song, subsequent songs can just be queued normally";
+      "3. Click on first song in playlist to start the queue\n" +
+      "NOTE: this only has to be done for the first song, subsequent songs can just be queued without those steps";
       alert(message);
     }
 
@@ -545,7 +545,7 @@
           newA.appendChild(document.createTextNode(getCookie('playlist_name')));
           newA.href = "https://open.spotify.com/playlist/" + getCookie('playlist');
           $("#playlistLabel").append(newA);
-          $("#deviceDiv").css("display", "block");
+          $("#deviceDiv").css("display", "none");
           $("#directions").css("display", "block");
           $("#deleteRoom").css("display", "block");
           $("#exitRoom").css("display", "none");

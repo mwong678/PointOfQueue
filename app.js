@@ -785,7 +785,7 @@ app.post('/addtoqueue', function(req, res) {
           }else{
             //two cases, paused and end of playlist
             //addSongToQueue(id && (progress > 0));
-            addSongToQueue(id);
+            addSongToQueue(id && (progress > 0));
           }
          }
         } else {
@@ -827,9 +827,11 @@ app.post('/addtoqueue', function(req, res) {
    if (!error && response.statusCode === 201) {
     console.log("Added " + song + " by " + artist + " with this uri: " + uri + " to the queue");
     if (!isPlaying) {
+
      var songQuery = (device_id) ? '/?' + querystring.stringify({
        device_id: device_id
      }) : '';
+
      var playSongOptions = {
       url: 'https://api.spotify.com/v1/me/player/play',
       headers: {
@@ -890,16 +892,11 @@ app.post('/addtoqueue', function(req, res) {
      }
     });
    } else {
+    console.log(response.body.error.status + " " + response.body.error.message);
     res.status(404);
-    if (response.body && response.body.error.message.includes("active")){
-      res.send({
-       result: "No active devices, you can make a device active by playing some music first!"
-      });
-    }else{
-      res.send({
-       result: response.body.error.status + " " + response.body.error.message
-      });
-    }
+    res.send({
+     result: response.body.error.status + " " + response.body.error.message
+    });
    }
    return;
   });
@@ -1057,14 +1054,12 @@ app.post('/addtoqueue', function(req, res) {
   });
  };
 
+/*
  var addSongToQueue = function(isPlaying) {
   request.post(addToQueueOptions, function(error, response, body) {
    if (!error && response.statusCode === 201) {
     console.log("Added " + song + " by " + artist + " with this uri: " + uri + " to the queue");
     if (!isPlaying) {
-     var songQuery = (device_id) ? '/?' + querystring.stringify({
-       device_id: device_id
-     }) : '';
      var playSongOptions = {
       url: 'https://api.spotify.com/v1/me/player/play',
       headers: {
@@ -1102,6 +1097,8 @@ app.post('/addtoqueue', function(req, res) {
    return;
   });
  };
+ */
+
 
 
  var playSong = function(playSongOptions) {
@@ -1150,7 +1147,25 @@ app.post('/addtoqueue', function(req, res) {
    });
  };
 
- getCurrentlyPlaying();
+ //getCurrentlyPlaying();
+ var addSongToQueue = function() {
+  request.post(addToQueueOptions, function(error, response, body) {
+   if (!error && response.statusCode === 201) {
+    console.log("Added " + song + " by " + artist + " with this uri: " + uri + " to the queue");
+    res.send({
+     result: "Added " + song + " by " + artist + " to the queue"
+    });
+   } else {
+    console.log(response.body.error.status + " " + response.body.error.message);
+    res.status(404);
+    res.send({
+     result: response.body.error.status + " " + response.body.error.message
+    });
+   }
+   return;
+  });
+ };
+ addSongToQueue();
  return;
 });
 
@@ -1228,6 +1243,7 @@ function updateQueues() {
       var getQueue = function() {
        request.get(getQueueOptions, function(error, response, body) {
         if (!error && response.statusCode === 200) {
+
          getCurrentlyPlaying(body);
         } else {
          console.log("Error getting playlist");
@@ -1256,8 +1272,12 @@ function updateQueues() {
        request.get(getCurrentOptions, function(error, response, body) {
         if (!error && response && (response.statusCode === 200 || response.statusCode === 204)) {
          var isPlaying = (body) ? body.is_playing : null;
-         var duration, progress, id;
+         var duration, progress, id, currPlaylistArray, currPlaylist;
          if (body && body.item) {
+          currPlaylistArray = (body.context) ? body.context.uri.split(":") : null;
+          currPlaylist = (currPlaylistArray) ? currPlaylistArray[currPlaylistArray.length - 1] : null;
+
+
           duration = body.item.duration_ms;
           progress = body.progress_ms;
           if (progress > 0 || (progress == 0 && isPlaying)) {
@@ -1270,6 +1290,7 @@ function updateQueues() {
           };
           updateCurrTrack(code, newCurrTrack);
          } else {
+           console.log("no current");
           return;
          }
 
@@ -1308,6 +1329,9 @@ function updateQueues() {
           }
          }
          updateRoomQueue(code, finalResult);
+         if (playlist_id != currPlaylist){
+           //return;
+         }
 
          var deleteOptions = {
           url: 'https://api.spotify.com/v1/playlists/' + playlist_id + '/tracks',
@@ -1341,7 +1365,7 @@ function updateQueues() {
             console.log("isLocked: " + lock);
             console.log();
             if (!lock) {
-             deleteFromPlaylist(deleteOptions);
+             //deleteFromPlaylist(deleteOptions);
             }
            }
           })
@@ -1430,6 +1454,6 @@ mongo.connectToServer(function(err, client) {
   console.log(items);
  });
 
- setInterval(updateQueues, 1000);
+ //setInterval(updateQueues, 1000);
  app.listen(port);
 });
