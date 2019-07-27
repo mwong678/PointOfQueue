@@ -365,6 +365,7 @@
     function changeDevice(){
       var deviceList = document.getElementById('deviceList');
       var device_id = deviceList.value == "None" ? '' : deviceList.value;
+      /*
       $.ajax({
               type: "POST",
               url: '/changedevice',
@@ -379,7 +380,7 @@
                 console.log(result.result);
                 //toastr.error(result.result);
               }
-      });
+        */
     }
 
 
