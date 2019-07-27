@@ -824,9 +824,8 @@ app.post('/addtoqueue', function(req, res) {
      var songQuery = (device_id) ? '/?' + querystring.stringify({
        device_id: device_id
      }) : '';
-     console.log(songQuery);
      var playSongOptions = {
-      url: 'https://api.spotify.com/v1/me/player/play' + songQuery,
+      url: 'https://api.spotify.com/v1/me/player/play',
       headers: {
        'Authorization': 'Bearer ' + access_token
       },
@@ -885,11 +884,16 @@ app.post('/addtoqueue', function(req, res) {
      }
     });
    } else {
-    console.log(response.body.error.status + " " + response.body.error.message);
     res.status(404);
-    res.send({
-     result: response.body.error.status + " " + response.body.error.message
-    });
+    if (response.body && response.body.error.message.includes("active")){
+      res.send({
+       result: "No active devices, you can make a device active by playing some music first!"
+      });
+    }else{
+      res.send({
+       result: response.body.error.status + " " + response.body.error.message
+      });
+    }
    }
    return;
   });
