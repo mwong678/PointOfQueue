@@ -191,10 +191,6 @@
                 var device_id = getCookie('device_id');
                 $("#deviceList").empty();
                 var selected = -1;
-                option = document.createElement('option');
-                option.value = "None";
-                option.innerHTML = "Select...";
-                //deviceList.appendChild(option);
                   if (data && data.devices.length > 0){
                     var devices = data.devices;
                     for (var i = 0; i < devices.length; i++){
@@ -284,7 +280,7 @@
               dataType: 'json',
               success: function(data) {
                 if (data.result.length == 0){
-                  toastr.info("No results found.");
+                  //toastr.info("No results found.");
                   return;
                 }
                 $('#resultList').empty();
