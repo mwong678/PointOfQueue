@@ -527,8 +527,11 @@
 
         let room_owner = getCookie('room_owner');
         if (username == room_owner){
-          $("#playlistLabel").text("Playlist Name: " + getCookie('playlist_name'));
-          //fetchDevices();
+          $("#playlistLabel").text("Playlist Name: ");
+          newA = document.createElement('a');
+          newA.appendChild(document.createTextNode(getCookie('playlist_name')));
+          newA.href = "https://open.spotify.com/playlist/" + getCookie('playlist');
+          $("#playlistLabel").append(newA);
           $("#deviceDiv").css("display", "none");
           $("#deleteRoom").css("display", "block");
           $("#exitRoom").css("display", "none");
@@ -598,7 +601,8 @@
 
 
       $('a').click(function(event) {
-          event.preventDefault();
+
+          //event.preventDefault();
       });
 
     })();
