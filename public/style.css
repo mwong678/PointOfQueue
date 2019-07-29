@@ -62,13 +62,13 @@ h1{
 }
 
 #roomLabel {
-  display: block;
+  display: inline-block;
   padding: 5px;
+  text-align: center;
 }
 
 #playlistLabel {
   display: block;
-  padding-top: 5px;
   padding-bottom: 10px;
 }
 
@@ -176,8 +176,8 @@ background:#3594D2;
   text-align: center;
   display:inline-block;
   margin: 0 auto;
-  margin-top: 5px;
-  margin-bottom: 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
   font-weight:800;
   font-size:0.1em;
 }
@@ -236,7 +236,7 @@ background:#3594D2;
   background:#2CC06B;
 }
 
-#instructions{
+.instructions{
   font-size:12px;
   text-decoration: none;
   color:#000000;
@@ -244,7 +244,7 @@ background:#3594D2;
   text-align: left;
   padding-left: 10px;
   padding-right: 10px;
-  
+
 }
 
 

@@ -31,7 +31,10 @@
     <br />
   </div>
   <div id="tabs" class="container">
-    <label id="roomLabel"></label>
+
+    <label id="roomLabel">Room Code: <span id="labelCode"></span></label>
+    <a onclick="copyRoomCode()" id="copyRoomCode"><div class="devicebtn"><i id='refresh' class="material-icons">assignment</i></div></a>
+
     <label id="playlistLabel"></label>
     <div id = 'deviceDiv'>
       <label id="deviceLabel">Device: <select id='deviceList'></select></label>
@@ -58,11 +61,15 @@
     </form>
   </div>
   <div id="tab-3" class="tab-content current">
-    <p id="instructions">INSTRUCTIONS<br /><br />
+    <p id="ownerInstructions" class="instructions">INSTRUCTIONS<br /><br />
                          1. Add a song to the queue(double tap a song to add)<br />
                          2. Click on the playlist name link to open Spotify<br />
                          3. Play first song in playlist to start playing the queue<br /><br />
                          NOTE: this only has to be done for the first song of a queue, subsequent songs can just be queued without those steps
+    </p>
+    <p id="userInstructions" class="instructions">INSTRUCTIONS<br /><br />
+                         1. Wait for owner of the room to start queue(<span id="owner"></span> is room owner)<br />
+                         2. Add a song to the queue(double tap a song to add)<br />
     </p>
     <a onclick="deleteRoom()" id="deleteRoom"><div class="deleteexitbtn">Delete Room</div></a>
     <a onclick="exitRoom()" id="exitRoom"><div class="deleteexitbtn">Exit Room</div></a>
@@ -131,6 +138,19 @@
       }else{
         successMsg.innerHTML = '';
       }
+    }
+
+    function copyRoomCode(){
+      //select only works on input, so create one
+      //copy paste span text then copy to clipboard
+      var copyText = document.getElementById("labelCode");
+      var textArea = document.createElement("textarea");
+      textArea.value = copyText.textContent;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("Copy");
+      textArea.remove();
+      toastr.info("Copied to clipboard!");
     }
 
     function createRoom(){
@@ -547,15 +567,15 @@
                       toastr.error(result);
                   }
           });
-          $("#roomLabel").text();
+          //$("#roomLabel").text();
           $("#roomError").css('display', 'none');
           $(".container").css("display", "none");
           $("#loginBox").css("display", "block");
           $("#loginBox").hide().fadeIn(1000);
           return;
         }
-
-        $("#roomLabel").text("Room Code: " + room_code);
+        document.getElementById("labelCode").textContent = room_code;
+        //$("#roomLabel").text("Room Code: " + room_code);
         $("#accountInfo").css("display", "none");
 
         let room_owner = getCookie('room_owner');
@@ -565,13 +585,18 @@
           newA.appendChild(document.createTextNode(getCookie('playlist_name')));
           newA.href = "https://open.spotify.com/playlist/" + getCookie('playlist');
           $("#playlistLabel").append(newA);
-          $("#deviceDiv").css("display", "none");
+          $("#ownerInstructions").css("display", "block");
+          $("#userInstructions").css("display", "none");
+          //$("#deviceDiv").css("display", "none");
           $("#directions").css("display", "block");
           $("#deleteRoom").css("display", "block");
           $("#exitRoom").css("display", "none");
         }else{
           $("#playlistLabel").text("");
-          $("#deviceDiv").css("display", "none");
+          //$("#deviceDiv").css("display", "none");
+          document.getElementById('owner').textContent = room_owner;
+          $("#ownerInstructions").css("display", "none");
+          $("#userInstructions").css("display", "block");
           $("#directions").css("display", "none");
           $("#deleteRoom").css("display", "none");
           $("#exitRoom").css("display", "block");
