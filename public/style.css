@@ -68,8 +68,9 @@ h1{
 }
 
 #labelCode{
-  width: 40px;
+  width: 60px;
   font-size: 16px;
+  text-align: center;
 }
 
 #playlistLabel {
