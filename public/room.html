@@ -34,7 +34,7 @@
     <label id="roomLabel"></label>
     <label id="playlistLabel"></label>
     <div id = 'deviceDiv'>
-      <label id="deviceLabel">Device: <select id='deviceList' onchange="changeDevice()"></select></label>
+      <label id="deviceLabel">Device: <select id='deviceList'></select></label>
       <a onclick="fetchDevices()" id="getDevices"><div class="devicebtn"><i id='refresh' class="material-icons">refresh</i></div></a>
     </div>
     <ul class="tabs">
@@ -49,20 +49,20 @@
   </div>
   <div id="tab-2" class="tab-content">
     <form class="searchBar" >
-      <input type="text" id="searchText" placeholder="Double tap to add a song!" name="search" oninput="searchSongs()">
+      <input autocomplete="off" autocorrect="off" autocaptitalize="off" type="text" id="searchText" placeholder="Double tap to add a song!" name="search" oninput="searchSongs()">
       <button type="button" onclick="searchSongs()"><i class="fa fa-search"></i></button>
       <label id="resultMsg" class="error"></label>
       <ul id=resultList>
       </ul>
     </form>
   </div>
-  <a onclick="directions()" id="directions"><div class="directionsbtn">How to use</div></a>
+  <a onclick="directions()" id="directions"><div class="directionsbtn">Instructions</div></a>
   <a onclick="deleteRoom()" id="deleteRoom"><div class="deleteexitbtn">Delete Room</div></a>
   <a onclick="exitRoom()" id="exitRoom"><div class="deleteexitbtn">Exit Room</div></a>
 </div>
   <div id ="loginBox" class="box">
   <h1>Dashboard</h1>
-  <input id ="roomField" type="name" name="name" placeholder="enter room code" value="" class="room" />
+  <input id ="roomField" autocomplete="off" autocorrect="off" autocaptitalize="off" type="name" name="name" placeholder="enter room code" value="" class="room" />
   <a onclick="findRoom()" ><div id="findRoom">Find</div></a>
   <label id="roomError" class="error"></label>
   <br/>
@@ -196,6 +196,7 @@
                     var devices = data.devices;
                     for (var i = 0; i < devices.length; i++){
                       currDevice = devices[i];
+                      console.log(currDevice);
                       deviceName = currDevice.name;
                       deviceId = currDevice.id;
                       if (currDevice.is_active){
@@ -210,11 +211,30 @@
                   deviceList.selectedIndex = selected;
 
                   if (selected == -1 || deviceList.options[deviceList.selectedIndex].value != device_id){
-                    //changeDevice();
+
                   }
               },
               error: function(res, error) {
                   var result = JSON.parse(res.responseText);
+                  console.log(res);
+              }
+      });
+    }
+
+    function playSong(uri){
+      var deviceList = document.getElementById('deviceList');
+      var device_id = deviceList.options[deviceList.selectedIndex].value;
+      console.log(device_id);
+      $.ajax({
+              type: "PUT",
+              url: 'https://api.spotify.com/v1/me/player/play/?device_id='+device_id,
+              headers: { 'Authorization': 'Bearer ' +  getCookie('access_token')},
+              data: JSON.stringify({"uris": [uri]}),
+              dataType: 'json',
+              success: function(data) {
+                  console.log(data);
+              },
+              error: function(res, error) {
                   console.log(res);
               }
       });
@@ -252,9 +272,9 @@
     function directions(){
       var message = "To start playing:\n" +
       "1. Add a song to the queue\n" +
-      "2. Click on the playlist link\n" +
-      "3. Click on first song in playlist to start the queue\n" +
-      "NOTE: this only has to be done for the first song, subsequent songs can just be queued without those steps";
+      "2. Click on the playlist name link\n" +
+      "3. Click on first song in playlist to start playing the queue\n" +
+      "NOTE: this only has to be done for the first song of a queue, subsequent songs can just be queued without those steps";
       alert(message);
     }
 
@@ -349,6 +369,7 @@
                       var uri = event.currentTarget.id;
                       var song = event.currentTarget.children[0].innerHTML;
                       var artist = event.currentTarget.children[1].innerHTML;
+                      //playSong(uri);
                       addToQueue(uri, song, artist);
                     }
                     //event.preventDefault();
@@ -365,7 +386,7 @@
     function changeDevice(){
       var deviceList = document.getElementById('deviceList');
       var device_id = deviceList.value == "None" ? '' : deviceList.value;
-      /*
+
       $.ajax({
               type: "POST",
               url: '/changedevice',
@@ -380,7 +401,7 @@
                 console.log(result.result);
                 //toastr.error(result.result);
               }
-        */
+        });
     }
 
 
@@ -601,10 +622,10 @@
           "positionClass": "toast-top-center",
           "preventDuplicates": false,
           "onclick": null,
-          "showDuration": "1000",
-          "hideDuration": "1000",
-          "timeOut": "2000",
-          "extendedTimeOut": "3000",
+          "showDuration": "500",
+          "hideDuration": "500",
+          "timeOut": "1000",
+          "extendedTimeOut": "2000",
           "showEasing": "swing",
           "hideEasing": "linear",
           "showMethod": "fadeIn",

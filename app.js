@@ -5,11 +5,17 @@ const https = require('https')
 const cors = require('cors');
 const properties = (process.env.PORT) ? '' : require('./properties.json');
 
+const SECOND_IN_MILLIS = 1000;
+const MINUTE_IN_MILLIS = 60 * SECOND_IN_MILLIS;
+const HOUR_IN_MILLIS = 60 * MINUTE_IN_MILLIS;
+const EXPIRE_TIME_IN_MILLIS = 3 * HOUR_IN_MILLIS;
+
 var mongo = require('./mongo.js');
 var myDB, userCollection, roomCollection;
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+
 
 const {
  check,
@@ -158,7 +164,8 @@ async function addRoomInDB(username, playlistURI, playlistName, access_token, re
   },
   access_token: access_token,
   refresh_token: refresh_token,
-  device_id: ''
+  device_id: '',
+  created_at: Date.now()
  }
  let insertResult = await roomCollection.insertOne(item);
  return insertResult ? code : null;
@@ -658,6 +665,7 @@ app.post('/changedevice', function(req, res){
         result: "Device is set!"
        });
      } else {
+      console.log(response);
       res.status(404);
       res.send({
        result: "Error transferring music"
@@ -737,23 +745,6 @@ app.post('/addtoqueue', function(req, res) {
   request.put(turnOffRepeatOptions);
  }
 
-
-
- var stopMusic = function(stopMusicOptions){
-   request.put(stopMusicOptions, function(error, response, body) {
-     if (!error && response.statusCode === 204) {
-       console.log("Paused Music");
-       addSongToQueue(false);
-     }else{
-       console.log(response.body.error.status + " " + response.body.error.message);
-       res.status(404);
-       res.send({
-        result: response.body.error.status + " " + response.body.error.message
-       });
-     }
-   });
- };
-
  var addSongToQueue = function() {
   request.post(addToQueueOptions, function(error, response, body) {
    if (!error && response.statusCode === 201) {
@@ -773,6 +764,7 @@ app.post('/addtoqueue', function(req, res) {
    return;
   });
  };
+
  addSongToQueue();
  return;
 });
@@ -798,7 +790,7 @@ app.get('/queue', function(req, res) {
     result: result
    });
   } else {
-   console.log("Error getting room")
+   console.log("Room has been deleted")
    res.status(404);
    res.cookie("access_token", '');
    res.cookie("refresh_token", '');
@@ -808,7 +800,7 @@ app.get('/queue', function(req, res) {
    res.cookie("playlist", '');
    res.cookie("device_id", '');
    res.send({
-    result: "Error getting room"
+    result: "Room has been deleted"
    });
   }
  });
@@ -824,201 +816,219 @@ function updateQueues() {
     var code = currRoom.code;
     var queue = currRoom.queue;
     var owner = currRoom.owner;
+    var created_at = currRoom.created_at;
     var access_token = currRoom.access_token;
     var refresh_token = currRoom.refresh_token;
     var playlistURI = currRoom.playlist;
     var playlist_id = playlistURI.split(":")[2];
 
-    getUserInDB(owner).then(function(userResult) {
-     if (userResult) {
-
-      var getQueueOptions = {
-       url: 'https://api.spotify.com/v1/playlists/' + playlist_id + '/tracks',
+    if (Date.now() > created_at + EXPIRE_TIME_IN_MILLIS){
+      var deleteOptions = {
+       url: 'https://api.spotify.com/v1/playlists/' + playlist_id + '/followers',
        headers: {
         'Authorization': 'Bearer ' + access_token
        },
        json: true
       };
+      request.delete(deleteOptions, function(error, response, body) {
+       if (!error && response.statusCode == 200) {
+        deleteRoom(code);
+        console.log("Deleted room " + code);
+       } else {
+        console.log("Error Deleting Playlist");
+       }
+      });
+    }else{
+      getUserInDB(owner).then(function(userResult) {
+       if (userResult) {
+        var getQueueOptions = {
+         url: 'https://api.spotify.com/v1/playlists/' + playlist_id + '/tracks',
+         headers: {
+          'Authorization': 'Bearer ' + access_token
+         },
+         json: true
+        };
 
-      var getCurrentOptions = {
-       url: 'https://api.spotify.com/v1/me/player/currently-playing',
-       headers: {
-        'Authorization': 'Bearer ' + access_token
-       },
-       json: true
-      };
+        var getCurrentOptions = {
+         url: 'https://api.spotify.com/v1/me/player/currently-playing',
+         headers: {
+          'Authorization': 'Bearer ' + access_token
+         },
+         json: true
+        };
 
-      var getQueue = function() {
-       request.get(getQueueOptions, function(error, response, body) {
-        if (!error && response.statusCode === 200) {
+        var getQueue = function() {
+         request.get(getQueueOptions, function(error, response, body) {
+          if (!error && response.statusCode === 200) {
 
-         getCurrentlyPlaying(body);
-        } else {
-         console.log("Error getting playlist");
-         if (response) {
-          if (response.body.error.status == 401 && response.body.error.message.includes('expired')) {
-           console.log("Code expired. Refreshing code...");
-           refreshToken(refresh_token, function(new_access_token) {
-            updateRoomCodesInDB(code, new_access_token, refresh_token).then(function(updateResult) {
-             if (updateResult) {
-              console.log("Code refreshed");
-             } else {
-              console.log("Error: unable to refresh code");
-             }
-            });
-           });
+           getCurrentlyPlaying(body);
           } else {
-           console.log(response.body.error.status + ": " + response.body.error.message);
-          }
-
-         }
-        }
-       });
-      };
-
-      var getCurrentlyPlaying = function(queueBody) {
-       request.get(getCurrentOptions, function(error, response, body) {
-        if (!error && response && (response.statusCode === 200 || response.statusCode === 204)) {
-         var isPlaying = (body) ? body.is_playing : null;
-         var duration, progress, id, currPlaylistArray, currPlaylist;
-         if (body && body.item) {
-          currPlaylistArray = (body.context) ? body.context.uri.split(":") : null;
-          currPlaylist = (currPlaylistArray) ? currPlaylistArray[currPlaylistArray.length - 1] : null;
-          if (playlist_id != currPlaylist){
-            return;
-          }
-          duration = body.item.duration_ms;
-          progress = body.progress_ms;
-          if (progress > 0 || (progress == 0 && isPlaying)) {
-            //this is the criteria for a curr song not to be deleted
-           id = body.item.id;
-          }
-          if (queueBody.items.length == 1){
-            firstSongArray = queueBody.items[0].track.uri.split(":");
-            if  (firstSongArray[firstSongArray.length - 1] != body.item.id){
-              id = body.item.id;
+           console.log("Error getting playlist");
+           if (response) {
+            if (response.body.error.status == 401 && response.body.error.message.includes('expired')) {
+             console.log("Code expired. Refreshing code...");
+             refreshToken(refresh_token, function(new_access_token) {
+              updateRoomCodesInDB(code, new_access_token, refresh_token).then(function(updateResult) {
+               if (updateResult) {
+                console.log("Code refreshed");
+               } else {
+                console.log("Error: unable to refresh code");
+               }
+              });
+             });
+            } else {
+             console.log(response.body.error.status + ": " + response.body.error.message);
             }
-          }
 
-          let newCurrTrack = {
-           progress: progress,
-           duration: duration,
-           uri: id
-          };
-          updateCurrTrack(code, newCurrTrack);
-         } else {
-           return;
-         }
-
-         var finalResult = [];
-         var toDelete = [];
-         var currTrackFound = false;
-
-
-         for (var i = 0; i < queueBody.items.length; i++) {
-          var currTrack = queueBody.items[i].track;
-          if (currTrackFound) {
-           var songName = currTrack.name;
-           var songURI = currTrack.uri;
-           var artists = currTrack.artists;
-           var artistString = "";
-           for (var j = 0; j < artists.length; j++) {
-            if (j > 0) {
-             artistString += ', ';
-            }
-            artistString += artists[j].name;
            }
-           finalResult.push({
-            name: songName,
-            uri: songURI,
-            artists: artistString,
-           });
-          } else {
-           if (currTrack.id == id) {
-            currTrackFound = true;
-            i--;
+          }
+         });
+        };
+
+        var getCurrentlyPlaying = function(queueBody) {
+         request.get(getCurrentOptions, function(error, response, body) {
+          if (!error && response && (response.statusCode === 200 || response.statusCode === 204)) {
+           var isPlaying = (body) ? body.is_playing : null;
+           var duration, progress, id, currPlaylistArray, currPlaylist;
+           if (body && body.item) {
+            currPlaylistArray = (body.context) ? body.context.uri.split(":") : null;
+            currPlaylist = (currPlaylistArray) ? currPlaylistArray[currPlaylistArray.length - 1] : null;
+            if (playlist_id != currPlaylist){
+              return;
+            }
+            duration = body.item.duration_ms;
+            progress = body.progress_ms;
+
+            if (progress > 0 || (progress == 0 && isPlaying)) {
+              //this is the criteria for a curr song not to be deleted
+             id = body.item.id;
+            }
+
+            if (queueBody.items.length == 1){
+              firstSongArray = queueBody.items[0].track.uri.split(":");
+              if  (firstSongArray[firstSongArray.length - 1] != body.item.id){
+                id = body.item.id;
+              }
+            }
+
+            let newCurrTrack = {
+             progress: progress,
+             duration: duration,
+             uri: id
+            };
+            updateCurrTrack(code, newCurrTrack);
            } else {
-            toDelete.push({
-             "uri": currTrack.uri
-            });
+             return;
+           }
+
+           var finalResult = [];
+           var toDelete = [];
+           var currTrackFound = false;
+
+
+           for (var i = 0; i < queueBody.items.length; i++) {
+            var currTrack = queueBody.items[i].track;
+            if (currTrackFound) {
+             var songName = currTrack.name;
+             var songURI = currTrack.uri;
+             var artists = currTrack.artists;
+             var artistString = "";
+             for (var j = 0; j < artists.length; j++) {
+              if (j > 0) {
+               artistString += ', ';
+              }
+              artistString += artists[j].name;
+             }
+             finalResult.push({
+              name: songName,
+              uri: songURI,
+              artists: artistString,
+             });
+            } else {
+             if (currTrack.id == id) {
+              currTrackFound = true;
+              i--;
+             } else {
+              toDelete.push({
+               "uri": currTrack.uri
+              });
+             }
+            }
+           }
+           updateRoomQueue(code, finalResult);
+
+           var deleteOptions = {
+            url: 'https://api.spotify.com/v1/playlists/' + playlist_id + '/tracks',
+            body: {
+             "tracks": toDelete
+            },
+            headers: {
+             'Authorization': 'Bearer ' + access_token
+            },
+            json: true
+           }
+           if (!process.env.PORT) {
+            console.log("isPlaying: " + isPlaying);
+            console.log("Progress: " + progress);
+            console.log("ID: " + id);
+            console.log("# songs to delete: " + toDelete.length);
+            console.log("currTrackFound: " + currTrackFound);
+            console.log();
+           }
+           if (toDelete.length > 0 && (isPlaying || id === undefined)) {
+            getRoomCodeInDB(code).then(function(roomResult) {
+             if (roomResult) {
+              var lock = roomResult.queueLock;
+              if (process.env.PORT) {
+               console.log("isPlaying: " + isPlaying);
+               console.log("Progress: " + progress);
+               console.log("ID: " + id);
+               console.log("# songs to delete: " + toDelete.length);
+               console.log("currTrackFound: " + currTrackFound);
+              }
+              console.log("isLocked: " + lock);
+              console.log();
+              if (!lock) {
+               deleteFromPlaylist(deleteOptions);
+              }
+             }
+            })
+           }
+          } else {
+           console.log("Error getting current: ");
+           if (response && response.body) {
+            console.log(response.body.error.status + ": " + response.body.error.message);
+           } else {
+            console.log(response);
            }
           }
-         }
-         updateRoomQueue(code, finalResult);
+          return;
+         });
+        };
 
-         var deleteOptions = {
-          url: 'https://api.spotify.com/v1/playlists/' + playlist_id + '/tracks',
-          body: {
-           "tracks": toDelete
-          },
-          headers: {
-           'Authorization': 'Bearer ' + access_token
-          },
-          json: true
-         }
-         if (!process.env.PORT) {
-          console.log("isPlaying: " + isPlaying);
-          console.log("Progress: " + progress);
-          console.log("ID: " + id);
-          console.log("# songs to delete: " + toDelete.length);
-          console.log("currTrackFound: " + currTrackFound);
-          console.log();
-         }
-         if (toDelete.length > 0 && (isPlaying || id === undefined)) {
-          getRoomCodeInDB(code).then(function(roomResult) {
-           if (roomResult) {
-            var lock = roomResult.queueLock;
-            if (process.env.PORT) {
-             console.log("isPlaying: " + isPlaying);
-             console.log("Progress: " + progress);
-             console.log("ID: " + id);
-             console.log("# songs to delete: " + toDelete.length);
-             console.log("currTrackFound: " + currTrackFound);
-            }
-            console.log("isLocked: " + lock);
-            console.log();
-            if (!lock) {
-             deleteFromPlaylist(deleteOptions);
-            }
+        var deleteFromPlaylist = function(deleteOptions) {
+         request.delete(deleteOptions, function(error, response, body) {
+          if (!error && response.statusCode === 200) {
+           console.log("Successfully deleted songs!");
+           console.log();
+          } else {
+           console.log("Error deleting songs: ");
+           if (response.body.error) {
+            console.log(response.body.error.status + ": " + response.body.error.message);
+           } else {
+            console.log(response);
            }
-          })
-         }
-        } else {
-         console.log("Error getting current: ");
-         if (response && response.body) {
-          console.log(response.body.error.status + ": " + response.body.error.message);
-         } else {
-          console.log(response);
-         }
-        }
+          }
+          return;
+         });
+        };
+
+        getQueue();
+
         return;
-       });
-      };
-
-      var deleteFromPlaylist = function(deleteOptions) {
-       request.delete(deleteOptions, function(error, response, body) {
-        if (!error && response.statusCode === 200) {
-         console.log("Successfully deleted songs!");
-         console.log();
-        } else {
-         console.log("Error deleting songs: ");
-         if (response.body.error) {
-          console.log(response.body.error.status + ": " + response.body.error.message);
-         } else {
-          console.log(response);
-         }
-        }
-        return;
-       });
-      };
-
-      getQueue();
-
-      return;
-     }
-    });
-
-
+       }
+      });
+    }
    }
   }
  });

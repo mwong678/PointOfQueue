@@ -315,7 +315,9 @@ background:#3594D2;
 }
 
 
-
+#deviceDiv{
+  display: none;
+}
 
 
 #resultList{
