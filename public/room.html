@@ -32,7 +32,7 @@
   </div>
   <div id="tabs" class="container">
 
-    <label id="roomLabel">Room Code: <span id="labelCode"></span></label>
+    <label id="roomLabel">Room Code: <input type="text" id="labelCode" readonly="true"></label>
     <a onclick="copyRoomCode()" id="copyRoomCode"><div class="devicebtn"><i id='refresh' class="material-icons">assignment</i></div></a>
 
     <label id="playlistLabel"></label>
@@ -141,17 +141,9 @@
     }
 
     function copyRoomCode(){
-      //select only works on input, so create one
-      //copy paste span text then copy to clipboard
       var copyText = document.getElementById("labelCode");
-      var textArea = document.createElement("textarea");
-      textArea.setAttribute('readonly', false);
-      textArea.setAttribute('contenteditable', false);
-      textArea.value = copyText.textContent;
-      document.body.appendChild(textArea);
-      textArea.select();
+      copyText.select();
       document.execCommand("Copy");
-      textArea.remove();
       toastr.info("Copied to clipboard!");
     }
 
@@ -576,7 +568,7 @@
           $("#loginBox").hide().fadeIn(1000);
           return;
         }
-        document.getElementById("labelCode").textContent = room_code;
+        document.getElementById("labelCode").value = room_code;
         //$("#roomLabel").text("Room Code: " + room_code);
         $("#accountInfo").css("display", "none");
 

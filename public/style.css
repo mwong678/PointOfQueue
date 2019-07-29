@@ -67,6 +67,10 @@ h1{
   text-align: center;
 }
 
+#labelCode{
+  width: 40px;
+}
+
 #playlistLabel {
   display: block;
   padding-bottom: 10px;
