@@ -142,7 +142,30 @@
 
     function copyRoomCode(){
       var copyText = document.getElementById("labelCode");
-      copyText.select();
+      var isiOSDevice = navigator.userAgent.match(/ipad|iphone/i);
+
+    	if (isiOSDevice) {
+
+    		var editable = copyText.contentEditable;
+    		var readOnly = copyText.readOnly;
+
+    		copyText.contentEditable = true;
+    		copyText.readOnly = false;
+
+    		var range = document.createRange();
+    		range.selectNodeContents(copyText);
+
+    		var selection = window.getSelection();
+    		selection.removeAllRanges();
+    		selection.addRange(range);
+
+    		copyText.setSelectionRange(0, 999999);
+    		copyText.contentEditable = editable;
+    		copyText.readOnly = readOnly;
+
+    	} else {
+    	 	copyText.select();
+    	}
       document.execCommand("Copy");
       toastr.info("Copied to clipboard!");
     }
