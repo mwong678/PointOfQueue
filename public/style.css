@@ -69,6 +69,7 @@ h1{
 
 #labelCode{
   width: 40px;
+  font-size: 16px;
 }
 
 #playlistLabel {
@@ -172,7 +173,7 @@ background:#3594D2;
 
 .devicebtn{
   background:#2ecc71;
-  width:20px;
+  width:25px;
   color:white;
   border-radius:4px;
   border: #27ae60 1px solid;
@@ -191,7 +192,7 @@ background:#3594D2;
 }
 
 #refresh {
-  font-size: 12px;
+  font-size: 16px;
 }
 
 .logoutbtn{
