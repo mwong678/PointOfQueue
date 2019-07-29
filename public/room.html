@@ -146,7 +146,7 @@
       var copyText = document.getElementById("labelCode");
       var textArea = document.createElement("textarea");
       //textArea.setAttribute('readonly', true);
-      //textArea.setAttribute('contenteditable', true);
+      textArea.setAttribute('contenteditable', true);
       textArea.value = copyText.textContent;
       document.body.appendChild(textArea);
       textArea.select();
