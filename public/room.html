@@ -68,7 +68,7 @@
                          NOTE: this only has to be done for the first song of a queue, subsequent songs can just be queued without those steps
     </p>
     <p id="userInstructions" class="instructions">INSTRUCTIONS<br /><br />
-                         1. Wait for owner of the room to start queue(<span id="owner"></span> is room owner)<br />
+                         1. Wait for owner of the room to start queue(<span id="owner"></span> is the room owner)<br />
                          2. Add a song to the queue(double tap a song to add)<br />
     </p>
     <a onclick="deleteRoom()" id="deleteRoom"><div class="deleteexitbtn">Delete Room</div></a>
@@ -584,7 +584,6 @@
                       toastr.error(result);
                   }
           });
-          //$("#roomLabel").text();
           $("#roomError").css('display', 'none');
           $(".container").css("display", "none");
           $("#loginBox").css("display", "block");
@@ -592,7 +591,6 @@
           return;
         }
         document.getElementById("labelCode").value = room_code;
-        //$("#roomLabel").text("Room Code: " + room_code);
         $("#accountInfo").css("display", "none");
 
         let room_owner = getCookie('room_owner');
@@ -674,12 +672,6 @@
         };
 
 
-      });
-
-
-      $('a').click(function(event) {
-
-          //event.preventDefault();
       });
 
     })();
