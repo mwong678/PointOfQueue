@@ -31,13 +31,6 @@
     <br />
   </div>
   <div id="tabs" class="container">
-  <!--
-    <div id="topDiv">
-    <label id="roomLabel">Room Code: <input type="text" id="labelCode" readonly="true"></label>
-    <a onclick="copyRoomCode()" id="copyRoomCode"><div class="devicebtn"><i id='refresh' class="material-icons">assignment</i></div></a>
-    <label id="playlistLabel"></label>
-    </div>
-  -->
     <div id = 'deviceDiv'>
       <label id="deviceLabel">Device: <select id='deviceList'></select></label>
       <a onclick="fetchDevices()" id="getDevices"><div class="devicebtn"><i id='refresh' class="material-icons">refresh</i></div></a>
@@ -589,7 +582,7 @@
           $("#userInstructions").css("display", "none");
           //$("#deviceDiv").css("display", "none");
           $("#directions").css("display", "block");
-          $("#deleteRoom").css("display", "block");
+          $("#deleteRoom").css("display", "inline-block");
           $("#exitRoom").css("display", "none");
         }else{
           //$("#playlistLabel").text("");
@@ -599,7 +592,7 @@
           $("#userInstructions").css("display", "block");
           $("#directions").css("display", "none");
           $("#deleteRoom").css("display", "none");
-          $("#exitRoom").css("display", "block");
+          $("#exitRoom").css("display", "inline-block");
         }
 
         var access_token = getCookie('access_token');
@@ -655,7 +648,6 @@
           "showMethod": "fadeIn",
           "hideMethod": "fadeOut"
         };
-
 
       });
 
