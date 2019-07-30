@@ -31,11 +31,13 @@
     <br />
   </div>
   <div id="tabs" class="container">
-
+  <!--
+    <div id="topDiv">
     <label id="roomLabel">Room Code: <input type="text" id="labelCode" readonly="true"></label>
     <a onclick="copyRoomCode()" id="copyRoomCode"><div class="devicebtn"><i id='refresh' class="material-icons">assignment</i></div></a>
-
     <label id="playlistLabel"></label>
+    </div>
+  -->
     <div id = 'deviceDiv'>
       <label id="deviceLabel">Device: <select id='deviceList'></select></label>
       <a onclick="fetchDevices()" id="getDevices"><div class="devicebtn"><i id='refresh' class="material-icons">refresh</i></div></a>
@@ -61,15 +63,20 @@
     </form>
   </div>
   <div id="tab-3" class="tab-content current">
+    <div id="topDiv">
+    <label id="roomLabel">Room Code: <input type="text" id="labelCode" readonly="true"></label>
+    <a onclick="copyRoomCode()" id="copyRoomCode"><div class="devicebtn"><i id='refresh' class="material-icons">assignment</i></div></a>
+    <label id="playlistLabel"></label>
+    </div>
     <p id="ownerInstructions" class="instructions">INSTRUCTIONS<br /><br />
-                         1. Add a song to the queue(double tap a song to add)<br />
-                         2. Click on the playlist name link to open Spotify<br />
-                         3. Play first song in playlist to start playing the queue<br /><br />
+                         1. Add a song to the queue (double tap to add a song)<br />
+                         2. Click on the playlist link to open Spotify<br />
+                         3. Play first song in playlist to start the queue<br /><br />
                          NOTE: this only has to be done for the first song of a queue, subsequent songs can just be queued without those steps
     </p>
     <p id="userInstructions" class="instructions">INSTRUCTIONS<br /><br />
-                         1. Wait for owner of the room to start queue(<span id="owner"></span> is the room owner)<br />
-                         2. Add a song to the queue(double tap a song to add)<br />
+                         1. Wait for owner of the room to start queue (<span id="owner"></span> is the room owner)<br />
+                         2. Add a song to the queue (double tap a song to add)<br />
     </p>
     <a onclick="deleteRoom()" id="deleteRoom"><div class="deleteexitbtn">Delete Room</div></a>
     <a onclick="exitRoom()" id="exitRoom"><div class="deleteexitbtn">Exit Room</div></a>
@@ -595,9 +602,10 @@
 
         let room_owner = getCookie('room_owner');
         if (username == room_owner){
-          $("#playlistLabel").text("Playlist Name: ");
+          //$("#playlistLabel").text("Playlist Name: ");
           newA = document.createElement('a');
-          newA.appendChild(document.createTextNode(getCookie('playlist_name')));
+          //newA.appendChild(document.createTextNode(getCookie('playlist_name')));
+          newA.appendChild(document.createTextNode("Playlist Link"));
           newA.href = "https://open.spotify.com/playlist/" + getCookie('playlist');
           $("#playlistLabel").append(newA);
           $("#ownerInstructions").css("display", "block");
@@ -607,7 +615,7 @@
           $("#deleteRoom").css("display", "block");
           $("#exitRoom").css("display", "none");
         }else{
-          $("#playlistLabel").text("");
+          //$("#playlistLabel").text("");
           //$("#deviceDiv").css("display", "none");
           document.getElementById('owner').textContent = room_owner;
           $("#ownerInstructions").css("display", "none");
