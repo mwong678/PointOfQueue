@@ -581,9 +581,7 @@
 
         let room_owner = getCookie('room_owner');
         if (username == room_owner){
-          //$("#playlistLabel").text("Playlist Name: ");
           newA = document.createElement('a');
-          //newA.appendChild(document.createTextNode(getCookie('playlist_name')));
           newA.appendChild(document.createTextNode("Open playlist in Spotify"));
           newA.href = "https://open.spotify.com/playlist/" + getCookie('playlist');
           $("#playlistLabel").append(newA);
