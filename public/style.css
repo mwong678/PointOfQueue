@@ -375,11 +375,13 @@ form.searchBar input[type=text] {
   margin-top: 20px;
   padding: 10px;
   font-size: 17px;
+  /*
   border: 1px solid grey;
+  */
+  border-radius: 4px 0px 0px 4px;
+  border: 1px solid transparent;
   float: left;
   width: 80%;
-  background: #f1f1f1;
-  border-radius: 0;
 }
 
 form.searchBar button {
@@ -390,7 +392,11 @@ form.searchBar button {
   background: #2196F3;
   color: white;
   font-size: 17px;
+  border-radius: 0px 4px 4px 0px;
+  /*
   border: 1px solid grey;
+  */
+  border: 1px solid transparent;
   border-left: none;
   cursor: pointer;
 }
