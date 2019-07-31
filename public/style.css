@@ -357,7 +357,6 @@ h1{
   width:35%;
   padding: 6px 9px;
   color:white;
-  border-radius: 0;
   display:inline-block;
   border-radius: 0px 4px 4px 0px;
   border: 1px solid transparent;
@@ -366,7 +365,7 @@ h1{
   text-align: center;
   margin-top:10px;
   margin-bottom:10px;
-  font-weight:900;
+  font-weight:1000;
 }
 
 
@@ -375,9 +374,6 @@ form.searchBar input[type=text] {
   margin-top: 20px;
   padding: 10px;
   font-size: 17px;
-  /*
-  border: 1px solid grey;
-  */
   border-radius: 4px 0px 0px 4px;
   border: 1px solid transparent;
   float: left;
@@ -393,9 +389,6 @@ form.searchBar button {
   color: white;
   font-size: 17px;
   border-radius: 0px 4px 4px 0px;
-  /*
-  border: 1px solid grey;
-  */
   border: 1px solid transparent;
   border-left: none;
   cursor: pointer;
