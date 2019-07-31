@@ -23,7 +23,13 @@ p{
 
 h1{
   font-size:1.5em;
-  color:#525252;
+  color:#000000;
+}
+
+#intro {
+  padding-left: 21px;
+  padding-right: 21px;
+  color:#000000;
 }
 
 .box{
