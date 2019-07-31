@@ -70,8 +70,8 @@
     <label id="roomLabel"><span style="font-size: 20px;">Room Code: </span><span id="labelCode"></span></label>
       <div id="bottomDiv">
         <label id="playlistLabel"></label>
-        <a onclick="deleteRoom()" id="deleteRoom"><div class="deleteexitbtn">Delete Room</div></a>
-        <a onclick="exitRoom()" id="exitRoom"><div class="deleteexitbtn">Exit Room</div></a>
+        <div class="deleteexitbtn" onclick="deleteRoom()" id="deleteRoom">Delete Room</div>
+        <div class="deleteexitbtn" onclick="exitRoom()" id="exitRoom">Exit Room</div>
       </div>
     </div>
   </div>
@@ -657,11 +657,11 @@
 
       });
 
-      $(".btn, .logoutbtn, #findRoom").on("touchstart",function(event){
+      $(".btn, .logoutbtn, .deleteexitbtn, #findRoom").on("touchstart",function(event){
           $(this).css("background", "#2CC06B");
       });
 
-      $(".btn, .logoutbtn, #findRoom").on("touchend",function(event){
+      $(".btn, .logoutbtn, .deleteexitbtn, #findRoom").on("touchend",function(event){
           $(this).css("background", "#2ecc71");
       });
 
