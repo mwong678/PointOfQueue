@@ -85,6 +85,8 @@ h1{
 
 #playlistLabel {
   display: block;
+  font-size: 20px;
+  padding-top: 10px;
   padding-bottom: 50px;
 }
 
