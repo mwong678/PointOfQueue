@@ -342,10 +342,10 @@ h1{
 #roomField {
   float: left;
   width: 80%;
-  border-radius: 0;
   font-size: 16px;
   display:inline-block;
   border-radius: 4px 0px 0px 4px;
+  border: 1px solid grey;
 }
 
 #findRoomForm{
@@ -363,13 +363,11 @@ h1{
   display:inline-block;
   border: 1px solid grey;
   border-left: none;
-  font-size: 16px;
+  font-size: 12px;
   text-align: center;
-  margin: 0 auto;
   margin-top:10px;
   margin-bottom:10px;
   font-weight:800;
-  font-size:0.8em;
 }
 
 
