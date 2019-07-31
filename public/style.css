@@ -366,12 +366,13 @@ background:#3594D2;
 		}
 		ul.tabs li{
 			background: #3498db;
-			color: #222;
+			color: #000000;
 			display: inline-block;
 			padding: 10px 0px;
 			cursor: pointer;
       width:33%;
       float:left;
+      font-size: 20px;
 		}
 
 		ul.tabs li.current{
@@ -409,6 +410,7 @@ form.searchBar input[type=text] {
   float: left;
   width: 80%;
   background: #f1f1f1;
+  border-radius: 0;
 }
 
 form.searchBar button {
