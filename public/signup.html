@@ -14,6 +14,14 @@
     <script src="https://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
     <script src="jquery.ui.touch-punch.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script>
+      $( function() {
+        $('.logIn').submit(function () {
+         signUp();
+         return false;
+        });
+    } );
+    </script>
     <br/>
     <br/>
     <br/>
@@ -24,6 +32,10 @@
         <label id="usernameError" class="error"></label>
         <input id="passwordField" type="password" name="password" placeholder="password" value="" class="email" />
         <label id="passwordError" class="error"></label>
+        <form class="logIn" >
+        <input id="confirmPasswordField" type="password" name="password" placeholder="confirm password" value="" class="email" />
+        <label id="confirmPasswordError" class="error"></label>
+        </form>
         <br />
         <br />
         <a onclick="signUp()" id="signUp">
@@ -39,8 +51,10 @@
         function signUp() {
             var username = document.getElementById("usernameField").value;
             var password = document.getElementById("passwordField").value;
+            var confirmPassword = document.getElementById("confirmPasswordField").value;
             var usernameError = document.getElementById('usernameError');
             var passwordError = document.getElementById('passwordError');
+            var confirmPasswordError = document.getElementById('confirmPasswordError');
             var successMsg = document.getElementById('successMsg');
             var errorMsg = document.getElementById('errorMsg');
 
@@ -64,6 +78,16 @@
                 passwordError.innerHTML = "";
             }
 
+            if (!confirmPassword) {
+                confirmPasswordError.innerHTML = "Please confirm your password.";
+                return;
+            } else if (password != confirmPassword) {
+                confirmPasswordError.innerHTML = "Passwords don't match";
+                return;
+            } else {
+                confirmPasswordError.innerHTML = "";
+            }
+            
             $.ajax({
                 type: "POST",
                 url: '/signup',
