@@ -84,13 +84,37 @@ h1{
 }
 
 #playlistLabel {
-  display: block;
-  font-size: 20px;
-  padding-top: 10px;
-  padding-bottom: 50px;
+
+  font-size: 16px;
+  padding-top: 5px;
+  float: left;
 }
 
+.deleteexitbtn{
+  background:#2ecc71;
+  padding-top:5px;
+  padding-bottom:5px;
+  padding-left:5px;
+  padding-right:5px;
+  color:white;
+  border-radius:4px;
+  border: #27ae60 1px solid;
 
+  margin: 0;
+  display: block;
+  font-weight:800;
+  font-size:0.8em;
+  float: right;
+}
+
+.deleteexitbtn:hover{
+  background:#2CC06B;
+}
+
+#bottomDiv{
+  margin-top: 20px;
+  overflow: hidden;
+}
 
 
 
@@ -213,7 +237,7 @@ background:#3594D2;
 #topDiv {
   margin-top: 30px;
   padding-left: 10px;
-  text-align: left;
+  padding-right: 10px;
 }
 
 .logoutbtn{
@@ -239,25 +263,8 @@ background:#3594D2;
   background:#2CC06B;
 }
 
-.deleteexitbtn{
-  background:#2ecc71;
-  width:100px;
-  padding-top:5px;
-  padding-bottom:5px;
-  color:white;
-  border-radius:4px;
-  border: #27ae60 1px solid;
 
-  text-align: center;
-  margin: 0 auto;
-  display: inline-block;
-  font-weight:800;
-  font-size:0.8em;
-}
 
-.deleteexitbtn:hover{
-  background:#2CC06B;
-}
 
 .instructions{
   font-size:16px;
@@ -324,6 +331,7 @@ background:#3594D2;
 #queueMsg {
   display: block;
   padding-top: 40px;
+  font-size: 16px;
 }
 
 

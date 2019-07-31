@@ -56,21 +56,23 @@
     </form>
   </div>
   <div id="tab-3" class="tab-content current">
-    <p id="ownerInstructions" class="instructions"><span style="font-size: 20px;">INSTRUCTIONS</span><br /><br />
+    <p id="ownerInstructions" class="instructions"><span style="font-size: 20px;text-align: center;display: block;">INSTRUCTIONS</span><br />
                          1. Queue first song (double tap to add one)<br />
                          2. Open playlist in Spotify using the link below<br />
                          3. Start the queue by pressing play on the first song<br /><br />
                          <span style="text-decoration: underline;">NOTE:</span> Steps 2 & 3 only need to be done for the <span style="text-decoration: underline;">first</span> song of a queue, subsequent songs can be added with just Step 1
     </p>
-    <p id="userInstructions" class="instructions"><span style="font-size: 20px;">INSTRUCTIONS</span><br /><br />
+    <p id="userInstructions" class="instructions"><span style="font-size: 20px;text-align: center;display: block;">INSTRUCTIONS</span><br />
                          1. Wait for owner of the room to start queue (<span id="owner"></span> is the room owner)<br />
                          2. Add a song to the queue (double tap a song to add)<br />
     </p>
     <div id="topDiv">
     <label id="roomLabel"><span style="font-size: 20px;">Room Code: </span><span id="labelCode"></span></label>
-    <label id="playlistLabel"></label>
-    <a onclick="deleteRoom()" id="deleteRoom"><div class="deleteexitbtn">Delete Room</div></a>
-    <a onclick="exitRoom()" id="exitRoom"><div class="deleteexitbtn">Exit Room</div></a>
+      <div id="bottomDiv">
+        <label id="playlistLabel"></label>
+        <a onclick="deleteRoom()" id="deleteRoom"><div class="deleteexitbtn">Delete Room</div></a>
+        <a onclick="exitRoom()" id="exitRoom"><div class="deleteexitbtn">Exit Room</div></a>
+      </div>
     </div>
   </div>
   </div>
@@ -497,9 +499,11 @@
                 if (data.result.queue.length == 0){
                   $('#queueMsg').text('Queue is Empty');
                   $('#queueMsg').css('display', 'block');
+                  $('#queueList').css('display', 'none');
                 }else{
                   $('#queueMsg').text('');
                   $('#queueMsg').css('display', 'none');
+                  $('#queueList').css('display', 'block');
                   for (var i = 0;i < data.result.queue.length;i++){
                     let song = data.result.queue[i];
                     var newLI = document.createElement("li");
@@ -582,7 +586,7 @@
           $("#userInstructions").css("display", "none");
           //$("#deviceDiv").css("display", "none");
           $("#directions").css("display", "block");
-          $("#deleteRoom").css("display", "inline-block");
+          $("#deleteRoom").css("display", "block");
           $("#exitRoom").css("display", "none");
         }else{
           //$("#playlistLabel").text("");
@@ -592,7 +596,7 @@
           $("#userInstructions").css("display", "block");
           $("#directions").css("display", "none");
           $("#deleteRoom").css("display", "none");
-          $("#exitRoom").css("display", "inline-block");
+          $("#exitRoom").css("display", "block");
         }
 
         var access_token = getCookie('access_token');
