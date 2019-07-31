@@ -338,32 +338,39 @@ h1{
 * {
     box-sizing: border-box;
 }
-
-#roomField {
-  float: left;
-  width: 80%;
-  font-size: .8em;
-  display:inline-block;
-  border-radius: 4px 0px 0px 4px;
-  border: 1px solid grey;
-}
-
 #findRoomForm{
   width: 200px;
   margin-left: 50px;
 }
 
+#roomField {
+  float: left;
+  width: 65%;
+  font-size: 14px;
+  display:inline-block;
+  /*
+  border-radius: 4px 0px 0px 4px;
+    border: 1px solid grey;
+  */
+  -webkit-appearance: none;
+  padding: 6px 9px;
+  border-radius: 4px 0px 0px 4px;
+  border: 1px solid transparent;
+  margin-top:10px;
+  margin-bottom:10px;
+}
+
 #findRoom{
   background:#2ecc71;
-  width:20%;
-  padding-top:10px;
-  padding-bottom:10px;
+  width:35%;
+  padding: 6px 9px;
   color:white;
-  border-radius: 0px 4px 4px 0px;
+  border-radius: 0;
   display:inline-block;
-  border: 1px solid grey;
+  border-radius: 0px 4px 4px 0px;
+  border: 1px solid transparent;
   border-left: none;
-  font-size: .8em;
+  font-size: 14px;
   text-align: center;
   margin-top:10px;
   margin-bottom:10px;
