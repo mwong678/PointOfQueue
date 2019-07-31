@@ -25,7 +25,7 @@
     <script src="toastr.js"></script>
   <div id="accountInfo">
     <label id="signedIn"></label>
-    <a onclick="logOut()" id="logout"><div class="logoutbtn">Logout</div></a>
+    <div class="logoutbtn" onclick="logOut()">Logout</div>
     <br />
     <br />
     <br />
@@ -78,13 +78,15 @@
   </div>
   <div id ="loginBox" class="box">
   <h1>Dashboard</h1>
-  <input id ="roomField" autocomplete="off" autocorrect="off" autocaptitalize="off" type="name" name="name" placeholder="enter room code" value="" class="room" />
-  <a onclick="findRoom()" ><div id="findRoom">Find</div></a>
+  <form id="findRoomForm">
+    <input id ="roomField" autocomplete="off" autocorrect="off" autocaptitalize="off" type="name" name="name" placeholder="enter room code" value="" class="room" />
+    <div id="findRoom" onclick="findRoom()">Find</div>
+  </form>
   <label id="roomError" class="error"></label>
   <br/>
   <label id="orLabel">OR</label>
   <br/>
-  <a onclick="window.location.href='/createroom'" id="createRoom"><div class="btn">Create Room</div></a>
+  <div class="btn" onclick="window.location.href='/createroom'">Create Room</div>
   <br />
   <label id="successMsg" class="success"></label>
   </div>
@@ -653,6 +655,14 @@
           "hideMethod": "fadeOut"
         };
 
+      });
+
+      $(".btn, .logoutbtn, #findRoom").on("touchstart",function(event){
+          $(this).css("background", "#2CC06B");
+      });
+
+      $(".btn, .logoutbtn, #findRoom").on("touchend",function(event){
+          $(this).css("background", "#2ecc71");
       });
 
     })();
