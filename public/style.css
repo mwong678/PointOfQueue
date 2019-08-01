@@ -337,7 +337,7 @@ h1{
 
 #roomField {
   float: left;
-  width: 75%;
+  width: 80%;
   font-size: 17px;
   display:inline-block;
   -webkit-appearance: none;
@@ -350,7 +350,7 @@ h1{
 
 #findRoom{
   background:#2ecc71;
-  width:25%;
+  width:20%;
   padding: 6px 9px;
   color:white;
   display:inline-block;

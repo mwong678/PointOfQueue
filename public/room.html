@@ -20,6 +20,10 @@
        searchSongs();
        return false;
       });
+      $('#findRoomForm').submit(function () {
+       findRoom();
+       return false;
+      });
     } );
   </script>
     <script src="toastr.js"></script>
@@ -80,7 +84,8 @@
   <h1>Dashboard</h1>
   <form id="findRoomForm">
     <input id ="roomField" autocomplete="off" autocorrect="off" autocaptitalize="off" type="name" name="name" placeholder="enter room code" value="" class="room" />
-    <div id="findRoom" onclick="findRoom()">Find</div>
+    <!--<div id="findRoom" onclick="findRoom()">Find</div>-->
+    <button id="findRoom" type="button" onclick="findRoom()"><i class="fa fa-search"></i></button>
   </form>
   <label id="roomError" class="error"></label>
   <br/>
