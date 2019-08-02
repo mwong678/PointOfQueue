@@ -4,24 +4,14 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-</head>
-
-<body>
-
     <link href="https://fonts.googleapis.com/css?family=Roboto|Nunito&display=swap" rel="stylesheet">
-    <link href='style.css' rel='stylesheet' type='text/css'>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js" type="text/javascript"></script>
     <script src="https://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
-    <script src="jquery.ui.touch-punch.min.js"></script>
+    <link href='css/style.css' rel='stylesheet' type='text/css'>
+    <script src="js/jquery.ui.touch-punch.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script>
-      $( function() {
-        $('.logIn').submit(function () {
-         signUp();
-         return false;
-        });
-    } );
-    </script>
+</head>
+<body>
     <br/>
     <br/>
     <br/>
@@ -43,90 +33,10 @@
         <label id="errorMsg" class="error"></label>
         <br />
     </div>
-
-    <script>
-        function goBack(){
-          window.location.replace("/");
-        }
-        function signUp() {
-            var username = document.getElementById("usernameField").value;
-            var password = document.getElementById("passwordField").value;
-            var confirmPassword = document.getElementById("confirmPasswordField").value;
-            var usernameError = document.getElementById('usernameError');
-            var passwordError = document.getElementById('passwordError');
-            var confirmPasswordError = document.getElementById('confirmPasswordError');
-            var successMsg = document.getElementById('successMsg');
-            var errorMsg = document.getElementById('errorMsg');
-
-            if (!username) {
-                usernameError.innerHTML = "Please enter a username.";
-                return;
-            } else if (username.length < 4) {
-                usernameError.innerHTML = "Username must be at least 4 characters.";
-                return;
-            } else {
-                usernameError.innerHTML = "";
-            }
-
-            if (!password) {
-                passwordError.innerHTML = "Please enter a password.";
-                return;
-            } else if (password.length < 6) {
-                passwordError.innerHTML = "Password must be at least 6 characters.";
-                return;
-            } else {
-                passwordError.innerHTML = "";
-            }
-
-            if (!confirmPassword) {
-                confirmPasswordError.innerHTML = "Please confirm your password.";
-                return;
-            } else if (password != confirmPassword) {
-                confirmPasswordError.innerHTML = "Passwords don't match";
-                return;
-            } else {
-                confirmPasswordError.innerHTML = "";
-            }
-
-            $.ajax({
-                type: "POST",
-                url: '/signup',
-                data: {
-                    username: username,
-                    password: password
-                },
-                dataType: 'json',
-                success: function(data) {
-                    successMsg.innerHTML = data.result;
-                    errorMsg.innerHTML = "";
-                    window.location.replace("/");
-                },
-                error: function(res, error) {
-                    var result = JSON.parse(res.responseText);
-                    console.log(result.result);
-                    successMsg.innerHTML = "";
-                    errorMsg.innerHTML = result.result;
-                }
-            });
-        }
-    </script>
-    <script>
-        $(document).ready(function() {
-            $('.box').hide().fadeIn(1000);
-        });
-
-        $(".btn").on("touchstart",function(event){
-            $(this).css("background", "#2CC06B");
-        });
-
-        $(".btn").on("touchend",function(event){
-            $(this).css("background", "#2ecc71");
-        });
-
-    </script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js" type="text/javascript"></script>
     <script src="https://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
-    <script src="jquery.ui.touch-punch.min.js"></script>
+    <script src="js/jquery.ui.touch-punch.min.js"></script>
+    <script src="js/signup.js"></script>
 </body>
 
 </html>
