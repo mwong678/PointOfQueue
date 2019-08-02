@@ -20,11 +20,11 @@ $(document).ready(function(){
    return false;
   });
 
-  $(".btn, .logoutbtn, .deleteexitbtn, #findRoomBtn", "#searchBtn").on("touchstart",function(event){
+  $(".btn, .logoutbtn, .deleteexitbtn, #findRoomBtn, #searchBtn").on("touchstart",function(event){
       $(this).css("background", "#2CC06B");
   });
 
-  $(".btn, .logoutbtn, .deleteexitbtn, #findRoomBtn", "#searchBtn").on("touchend",function(event){
+  $(".btn, .logoutbtn, .deleteexitbtn, #findRoomBtn, #searchBtn").on("touchend",function(event){
       $(this).css("background", "#2ecc71");
   });
 

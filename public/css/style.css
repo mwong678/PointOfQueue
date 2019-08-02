@@ -83,6 +83,10 @@ h1{
   float: left;
 }
 
+#searchBtn {
+  background: #2CC06B;
+}
+
 .deleteexitbtn{
   background:#2ecc71;
   padding-top:5px;
