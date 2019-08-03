@@ -10,7 +10,7 @@ const MINUTE_IN_MILLIS = 60 * SECOND_IN_MILLIS;
 const HOUR_IN_MILLIS = 60 * MINUTE_IN_MILLIS;
 const EXPIRE_TIME_IN_MILLIS = 3 * HOUR_IN_MILLIS;
 
-var mongo = require('./mongo.js');
+var mongo = require('./lib/mongo.js');
 var myDB, userCollection, roomCollection;
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
