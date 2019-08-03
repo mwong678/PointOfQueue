@@ -790,7 +790,6 @@ app.get('/queue', function(req, res) {
     result: result
    });
   } else {
-   console.log("Room has been deleted")
    res.status(404);
    res.cookie("access_token", '');
    res.cookie("refresh_token", '');
@@ -860,7 +859,6 @@ function updateQueues() {
         var getQueue = function() {
          request.get(getQueueOptions, function(error, response, body) {
           if (!error && response.statusCode === 200) {
-
            getCurrentlyPlaying(body);
           } else {
            console.log("Error getting playlist");
