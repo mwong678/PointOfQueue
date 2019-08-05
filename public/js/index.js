@@ -1,7 +1,7 @@
 $(document).ready(function() {
   let username = getCookie('username');
   if (username != "") {
-    window.location.replace("/room");
+    window.location.replace("/room.html");
   }
   $('.box').hide().fadeIn(1000);
   $('#successMsg').css('display', 'none');
@@ -66,7 +66,7 @@ function submitCreds() {
       setErrors({
         "success": "Success! Logging In..."
       });
-      window.location.replace("/room");
+      window.location.replace("/room.html");
     },
     error: function(res, error) {
       var result = JSON.parse(res.responseText);

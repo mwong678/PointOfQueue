@@ -1,7 +1,5 @@
 const express = require('express');
 const request = require('request');
-const fs = require('fs')
-const https = require('https')
 const cors = require('cors');
 const properties = (process.env.PORT) ? '' : require('./properties.json');
 
@@ -21,6 +19,7 @@ const {
  check,
  validationResult
 } = require('express-validator');
+
 const client_id = (process.env.PORT) ? process.env.client_id : properties.client_id;
 const client_secret = (process.env.PORT) ? process.env.client_secret :  properties.client_secret;
 const redirect_uri = (process.env.PORT) ? process.env.redirect_uri : properties.redirect_uri_local;
@@ -281,13 +280,6 @@ app.post('/', [
 
 });
 
-app.get('/signup', function(req, res) {
- res.redirect('/signup.html');
-});
-
-app.get('/room', function(req, res) {
-    res.redirect('/room.html');
-});
 
 app.get('/checkforroom', function(req, res){
   var username = req.cookies["username"];
@@ -378,7 +370,7 @@ app.get('/createroom', function(req, res) {
       res.cookie("room_owner", username);
       res.cookie("playlist_name", playlistName);
       res.cookie("playlist", playlistURI.split(":")[2]);
-      res.redirect("/room");
+      res.redirect("/room.html");
      } else {
       res.status(404);
       res.send({
