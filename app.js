@@ -1067,6 +1067,6 @@ mongo.connectToServer(function(err, client) {
   console.log(items);
  });
 
- setInterval(updateQueues, 1000);
+ //setInterval(updateQueues, 1000);
  app.listen(port);
 });
