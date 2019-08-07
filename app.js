@@ -63,8 +63,6 @@ mongo.connectToServer(function(err, client) {
  roomCollection.find().toArray((err, items) => {
   console.log(items);
  });
-
-
  setInterval(async () => {await background.updateQueues()}, 1000);
  app.listen(port, () => console.log('Listening on ' + port));
 });
