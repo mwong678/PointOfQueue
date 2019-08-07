@@ -64,6 +64,7 @@ mongo.connectToServer(function(err, client) {
   console.log(items);
  });
 
+
  setInterval(async () => {await background.updateQueues()}, 1000);
  app.listen(port, () => console.log('Listening on ' + port));
 });
