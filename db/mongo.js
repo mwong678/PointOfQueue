@@ -121,7 +121,7 @@ async function updateCurrTrack(code, newCurrTrack) {
 }
 
 async function updateRoomQueue(code, newQueue) {
-  console.log("db ",newQueue);
+
  let query = {
   code: code
  };

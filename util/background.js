@@ -64,7 +64,6 @@ async function updateQueues(){
 
    body = await spotify.getCurrentlyPlaying(access_token);
    if (!body){
-     console.log("calling paused queue");
      await pausedQueue(queueBody, code);
      return;
    }
@@ -73,11 +72,18 @@ async function updateQueues(){
    var duration, progress, id, currPlaylistArray, currPlaylist;
 
    if (body && body.item) {
+
+    currentSongId = body.item.id;
     currPlaylistArray = (body.context) ? body.context.uri.split(":") : null;
     currPlaylist = (currPlaylistArray) ? currPlaylistArray[currPlaylistArray.length - 1] : null;
+
     if (playlist_id != currPlaylist){
+      //filters out anything thats not current context
+      await pausedQueue(queueBody, code);
       return;
     }
+
+
     duration = body.item.duration_ms;
     progress = body.progress_ms;
 
@@ -85,23 +91,19 @@ async function updateQueues(){
       //this is the criteria for a curr song not to be deleted
       //if its progress > 0 or beginning of song it will mark
       //as current song
-     id = body.item.id;
+     id = currentSongId;
     }
 
-    //pqueue = false;
     if (queueBody.items.length >= 1){
-      //if curr song playing isn't equal to first song in queue
-      //probably for when you add when nothing is playing
-      //this is for when you get through the playlist basically
-      //and need to restart queue
+      //this is the case if the queue has already ended
+      //and you want to restart
+      //set the curr song to the first song in the list
+      //so it doens't get deleted, plus it will show up in queue
       firstSongArray = queueBody.items[0].track.uri.split(":");
+      firstSongId = firstSongArray[firstSongArray.length - 1];
 
-      if (firstSongArray[firstSongArray.length - 1] != body.item.id){
-        //stop if playing from different playlist
-        //await pausedQueue(queueBody, code);
-        //id = body.item.id;
-        //pqueue = true;
-        id = firstSongArray[firstSongArray.length - 1];
+      if (firstSongId != currentSongId && !isPlaying){
+        id = firstSongId;
       }
     }
 
@@ -112,11 +114,10 @@ async function updateQueues(){
     };
 
     await mongo.updateCurrTrack(code, newCurrTrack);
-    //if (pqueue) return;
    } else {
      return;
    }
-   console.log("proceed")
+
    var finalResult = [];
    var toDelete = [];
    var currTrackFound = false;
