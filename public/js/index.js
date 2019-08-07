@@ -1,7 +1,7 @@
 $(document).ready(function() {
   let username = getCookie('username');
   if (username != "") {
-    window.location.replace("/room");
+    window.location.replace("/room.html");
   }
   $('.box').hide().fadeIn(1000);
   $('#successMsg').css('display', 'none');
@@ -54,9 +54,25 @@ function setErrors(json) {
 function submitCreds() {
   var username = document.getElementById('usernameField').value;
   var password = document.getElementById('passwordField').value;
+  var errorResponse = {};
+
+  if (username.length == 0){
+    errorResponse.username = 'Please enter a name'
+  }
+  if (password.length == 0){
+    errorResponse.password = 'Please enter a password'
+  }
+
+  setErrors(errorResponse);
+
+  if (Object.keys(errorResponse).length > 0){
+    return;
+  }
+
+
   $.ajax({
     type: "POST",
-    url: '/',
+    url: '/login',
     data: {
       username: username,
       password: password
@@ -66,7 +82,7 @@ function submitCreds() {
       setErrors({
         "success": "Success! Logging In..."
       });
-      window.location.replace("/room");
+      window.location.replace("/room.html");
     },
     error: function(res, error) {
       var result = JSON.parse(res.responseText);

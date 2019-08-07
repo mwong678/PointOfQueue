@@ -74,7 +74,6 @@ function signUp() {
     },
     error: function(res, error) {
       var result = JSON.parse(res.responseText);
-      console.log(result.result);
       successMsg.innerHTML = "";
       errorMsg.innerHTML = result.result;
     }
