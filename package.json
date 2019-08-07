@@ -2,19 +2,22 @@
   "author": " Matthew Wong",
   "name": "PointOfQueue",
   "description": "Allows you to create a spotify room and allow others to queue music for you.",
-  "version": "1.0.0",
+  "version": "2.0.0",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "Matthew Wong",
+  "license": "MIT",
   "dependencies": {
     "body-parser": "^1.19.0",
     "cookie-parser": "1.3.2",
     "cors": "^2.8.4",
-    "express": "~4.16.0",
+    "express": "^4.17.1",
     "express-validator": "^6.1.0",
-    "heroku-ssl-redirect": "0.0.4",
-    "mongodb": "^3.2.7",
+    "mongodb": "^3.3.0-beta2",
+    "mongoose": "^5.6.8",
     "querystring": "~0.2.0",
-    "request": "~2.83.0"
-  },
-  "scripts": {
-    "start": "node app.js"
+    "request": "~2.83.0",
+    "request-promise": "^4.2.4"
   }
 }

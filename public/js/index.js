@@ -54,9 +54,25 @@ function setErrors(json) {
 function submitCreds() {
   var username = document.getElementById('usernameField').value;
   var password = document.getElementById('passwordField').value;
+  var errorResponse = {};
+
+  if (username.length == 0){
+    errorResponse.username = 'Please enter a name'
+  }
+  if (password.length == 0){
+    errorResponse.password = 'Please enter a password'
+  }
+
+  setErrors(errorResponse);
+
+  if (Object.keys(errorResponse).length > 0){
+    return;
+  }
+
+
   $.ajax({
     type: "POST",
-    url: '/',
+    url: '/login',
     data: {
       username: username,
       password: password

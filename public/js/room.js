@@ -68,16 +68,14 @@ $(document).ready(function() {
       url: '/checkforroom',
       dataType: 'json',
       success: function(data) {
-        if (data.result == "Found") {
+        if (data.result == "OK") {
           location.reload();
         }
       },
       error: function(res, error) {
-        var result = JSON.parse(res.responseText);
-        toastr.error(result);
+        toastr.error(res.responseText);
       }
     });
-    $("#roomError").css('display', 'none');
     $(".container").css("display", "none");
     $("#loginBox").css("display", "block");
     $("#loginBox").hide().fadeIn(1000);
@@ -115,7 +113,7 @@ $(document).ready(function() {
     toastr.error('There was an error during the authentication');
   } else {
     if (access_token && refresh_token) {
-      setInterval(getQueue, 1000);
+      setInterval(async () => {await getQueue()}, 1000);
       $("#loginBox").css("display", "none");
       $(".container").css("display", "block");
       $(".container").hide().fadeIn(1000);
@@ -168,7 +166,9 @@ function createRoom() {
     type: "GET",
     url: '/createroom',
     dataType: 'json',
-    success: function(data) {},
+    success: function(data) {
+      console.log(data);
+    },
     error: function(res, error) {
       var result = JSON.parse(res.responseText);
       toastr.error(result);
@@ -184,12 +184,17 @@ function deleteRoom() {
       dataType: 'json',
       success: function(data) {
         if (data.result == 'Success') {
+          deleteCookie("access_token")
+          deleteCookie("refresh_token")
+          deleteCookie("room_code")
+          deleteCookie("room_owner")
+          deleteCookie("playlist_name")
+          deleteCookie("playlist");
           location.reload();
         }
       },
       error: function(res, error) {
-        var result = JSON.parse(res.responseText);
-        toastr.error(result);
+        toastr.error(res.responseText);
       }
     });
   }
@@ -197,20 +202,13 @@ function deleteRoom() {
 
 function exitRoom() {
   if (confirm("Are you sure?")) {
-    $.ajax({
-      type: "GET",
-      url: '/exitroom',
-      dataType: 'json',
-      success: function(data) {
-        if (data.result == 'Success') {
-          location.reload();
-        }
-      },
-      error: function(res, error) {
-        var result = JSON.parse(res.responseText);
-        toastr.error(result);
-      }
-    });
+    deleteCookie("access_token")
+    deleteCookie("refresh_token")
+    deleteCookie("room_code")
+    deleteCookie("room_owner")
+    deleteCookie("playlist_name")
+    deleteCookie("playlist");
+    location.reload();
   }
 }
 
@@ -287,14 +285,9 @@ function playSong(uri) {
 function findRoom() {
   let code = document.getElementById('roomField').value;
   if (code == "") {
-    $("#roomError").text("Please enter a code");
-    $("#roomError").css('display', 'block');
+    toastr.error("Please enter a code");
     return;
-  } else {
-    $("#roomError").text();
-    $("#roomError").css('display', 'none');
   }
-
   $.ajax({
     type: "POST",
     url: '/findroom',
@@ -303,14 +296,10 @@ function findRoom() {
     },
     dataType: 'json',
     success: function(data) {
-      $("#roomError").text();
-      $("#roomError").css('display', 'none');
       location.reload();
     },
     error: function(res, error) {
-      var result = JSON.parse(res.responseText);
-      $("#roomError").text(result.result);
-      $("#roomError").css('display', 'block');
+      toastr.error(res.responseText);
     }
   });
 }
@@ -491,6 +480,7 @@ function addToQueue(uri, song, artist) {
 }
 
 
+
 function getQueue() {
   var access_token = getCookie('access_token');
   var refresh_token = getCookie('refresh_token');
@@ -507,12 +497,12 @@ function getQueue() {
     return;
   }
   let room_code = getCookie("room_code");
+
   $.ajax({
     type: "GET",
     url: '/queue',
     dataType: 'json',
     success: function(data) {
-
       var duration = data.result.currentTrack.duration;
       var progress = data.result.currentTrack.progress;
       var id = data.result.currentTrack.uri;
@@ -550,8 +540,14 @@ function getQueue() {
 
     },
     error: function(res, error) {
-      if (JSON.parse(res.responseText).result == "Error getting room") {
+      if (JSON.parse(res.responseText).result == "DELETED") {
         toastr.error("Room doesn't exist!");
+        deleteCookie("access_token")
+        deleteCookie("refresh_token")
+        deleteCookie("room_code")
+        deleteCookie("room_owner")
+        deleteCookie("playlist_name")
+        deleteCookie("playlist");
         location.reload();
       }
     }
