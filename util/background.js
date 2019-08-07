@@ -63,7 +63,11 @@ async function updateQueues(){
    }
 
    body = await spotify.getCurrentlyPlaying(access_token);
-   if (!body) return;
+   if (!body){
+     console.log("calling paused queue");
+     await pausedQueue(queueBody, code);
+     return;
+   }
 
    var isPlaying = (body) ? body.is_playing : null;
    var duration, progress, id, currPlaylistArray, currPlaylist;
@@ -79,13 +83,25 @@ async function updateQueues(){
 
     if (progress > 0 || (progress == 0 && isPlaying)) {
       //this is the criteria for a curr song not to be deleted
+      //if its progress > 0 or beginning of song it will mark
+      //as current song
      id = body.item.id;
     }
 
+    //pqueue = false;
     if (queueBody.items.length >= 1){
+      //if curr song playing isn't equal to first song in queue
+      //probably for when you add when nothing is playing
+      //this is for when you get through the playlist basically
+      //and need to restart queue
       firstSongArray = queueBody.items[0].track.uri.split(":");
-      if  (firstSongArray[firstSongArray.length - 1] != body.item.id){
-        id = body.item.id;
+
+      if (firstSongArray[firstSongArray.length - 1] != body.item.id){
+        //stop if playing from different playlist
+        //await pausedQueue(queueBody, code);
+        //id = body.item.id;
+        //pqueue = true;
+        id = firstSongArray[firstSongArray.length - 1];
       }
     }
 
@@ -96,14 +112,14 @@ async function updateQueues(){
     };
 
     await mongo.updateCurrTrack(code, newCurrTrack);
+    //if (pqueue) return;
    } else {
      return;
    }
-
+   console.log("proceed")
    var finalResult = [];
    var toDelete = [];
    var currTrackFound = false;
-
 
    for (var i = 0; i < queueBody.items.length; i++) {
     var currTrack = queueBody.items[i].track;
@@ -156,6 +172,31 @@ async function updateQueues(){
    }
   }
 
+}
+
+async function pausedQueue(queueBody, code){
+  var finalResult = [];
+
+  for (var i = 0; i < queueBody.items.length; i++) {
+   var currTrack = queueBody.items[i].track;
+   var songName = currTrack.name;
+   var songURI = currTrack.uri;
+   var artists = currTrack.artists;
+   var artistString = "";
+   for (var j = 0; j < artists.length; j++) {
+    if (j > 0) {
+     artistString += ', ';
+    }
+    artistString += artists[j].name;
+   }
+   finalResult.push({
+    name: songName,
+    uri: songURI,
+    artists: artistString,
+   });
+  }
+
+  await mongo.updateRoomQueue(code, finalResult);
 }
 
 module.exports = {

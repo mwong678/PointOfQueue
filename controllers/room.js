@@ -153,7 +153,7 @@ const queue = async (req, res) => {
    res.send({result: "DELETED"});
    return;
  }
-
+ console.log(roomResult);
  result.currentTrack = roomResult.currentTrack;
  result.queue = roomResult.queue;
 

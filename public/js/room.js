@@ -503,6 +503,7 @@ function getQueue() {
     url: '/queue',
     dataType: 'json',
     success: function(data) {
+      //console.log(data.result);
       var duration = data.result.currentTrack.duration;
       var progress = data.result.currentTrack.progress;
       var id = data.result.currentTrack.uri;
