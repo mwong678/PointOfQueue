@@ -136,7 +136,11 @@ async function updateQueues(){
    }
 
    await mongo.updateRoomQueue(code, finalResult);
-
+   console.log("isPlaying: " + isPlaying);
+   console.log("Progress: " + progress);
+   console.log("ID: " + id);
+   console.log("# songs to delete: " + toDelete.length);
+   console.log("currTrackFound: " + currTrackFound);
 
    if (toDelete.length > 0 && (isPlaying || id === undefined)) {
      console.log("isPlaying: " + isPlaying);
