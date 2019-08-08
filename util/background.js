@@ -104,8 +104,6 @@ async function updateQueues(){
 
    if (toDelete.length > 0) {
      spotify.deleteFromPlaylist(access_token, playlist_id, toDelete);
-     //delete_songs = await spotify.deleteFromPlaylist(access_token, playlist_id, toDelete);
-     //if (!delete_songs) console.log("Error deleting songs");
    }
  }
 
