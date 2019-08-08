@@ -125,7 +125,7 @@ function findCurrentInQueue(id, queueBody){
 async function pausedQueue(queueBody, code){
   var finalResult = [];
 
-  if (!queueBody || !queueBody.items) return;
+  if (!queueBody.items) return;
 
   for (var i = 0; i < queueBody.items.length; i++) {
    currTrack = queueBody.items[i].track;

@@ -83,7 +83,7 @@ async function createPlaylist(access_token, user_id){
     'Content-Type': 'application/json'
    },
    body: JSON.stringify({
-    'name': 'POQ_' + util.generateRandomString(4)
+    'name': 'PointOfQueue_' + util.generateRandomString(4)
    })
   };
 
