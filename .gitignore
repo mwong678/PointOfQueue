@@ -2,3 +2,4 @@ node_modules/
 properties.json
 .DS_Store
 backups/
+backup_background.js

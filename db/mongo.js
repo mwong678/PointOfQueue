@@ -52,7 +52,6 @@ async function addRoomInDB(username, playlistURI, playlistName, access_token, re
   owner: username,
   playlist: playlistURI,
   playlist_name: playlistName,
-  queueLock: false,
   queue: [],
   currentTrack: {
    progress: '',

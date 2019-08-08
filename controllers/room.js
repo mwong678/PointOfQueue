@@ -140,6 +140,7 @@ const checkRoom = async (req, res) => {
 
   return;
 }
+
 const queue = async (req, res) => {
 
  room_code = req.cookies["room_code"];
@@ -153,7 +154,7 @@ const queue = async (req, res) => {
    res.send({result: "DELETED"});
    return;
  }
- 
+
  result.currentTrack = roomResult.currentTrack;
  result.queue = roomResult.queue;
 

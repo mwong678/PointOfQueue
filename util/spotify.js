@@ -191,7 +191,7 @@ async function addSongToQueue(access_token, playlist_id, uri, songInfo){
     addToQueueResult = await request.post(addToQueueOptions);
     request_old.put(turnOffShuffleOptions);
     request_old.put(turnOffRepeatOptions);
-    console.log("Added " + songInfo.song + " by " + songInfo.artist + " with this uri: " + songInfo.uri + " to the queue");
+    console.log("Added " + songInfo.song + " by " + songInfo.artist + " to the queue");
     return true;
   }catch(e){
     console.log("ERROR ADDING TO QUEUE -> " + e.message);
