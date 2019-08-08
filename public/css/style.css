@@ -371,7 +371,7 @@ h1{
   font-weight:900;
 }
 
-form.searchBar input[type=text] {
+form.searchBar input {
   margin-top: 20px;
   padding: 10px;
   font-size: 17px;
