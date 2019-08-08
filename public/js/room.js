@@ -17,7 +17,7 @@ $(document).ready(function() {
 
   $('#searchText').focus(
     function(){
-        $(this).val('');
+      $(this).val('');
   });
 
   $('#findRoomForm').submit(function() {
@@ -394,7 +394,7 @@ function searchSongs() {
 
       var tapped = false;
 
-      /*
+
       $(".resultItem").on("touchstart", function(event) {
         if (!tapped) {
           tapped = setTimeout(function() {
@@ -409,16 +409,6 @@ function searchSongs() {
           var artist = event.currentTarget.children[1].innerHTML;
           addToQueue(uri, song, artist);
         }
-      });
-      */
-
-      $(".resultItem").on("swiperight", function(event) {
-        console.log("swipe");
-        var touchedItem = $(this);
-        var uri = event.currentTarget.id;
-        var song = event.currentTarget.children[0].innerHTML;
-        var artist = event.currentTarget.children[1].innerHTML;
-        addToQueue(uri, song, artist);
       });
 
     },
