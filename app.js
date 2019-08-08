@@ -19,8 +19,6 @@ var https_redirect = function (req, res, next) {
           next();
        } else {
          if (isProduction){
-           //only redirect when deployed
-           console.log('HTTP DETECTED REDIRECTING');
            res.redirect('https://' + req.headers.host + req.url);
          }else{
            next();

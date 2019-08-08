@@ -371,14 +371,14 @@ h1{
   font-weight:900;
 }
 
-form.searchBar input {
+form.searchBar input[type="text"] {
   margin-top: 20px;
   padding: 10px;
   font-size: 17px;
   border-radius: 4px 0px 0px 4px;
   border: 1px solid transparent;
   float: left;
-  width: 80%;
+  width: 100%;
 }
 
 form.searchBar button {
