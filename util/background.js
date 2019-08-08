@@ -53,11 +53,9 @@ async function updateQueues(){
      return;
    }
 
-   //if (queueBody.items.length == 0) return;
-
    body = await spotify.getCurrentlyPlaying(access_token);
    if (!body){
-     await pausedQueue(queueBody, code);
+     pausedQueue(queueBody, code);
      return;
    }
 
@@ -71,14 +69,14 @@ async function updateQueues(){
 
    if (!currentSongExists || playlist_id != currPlaylist){
      //if no current song playing or not same playlist skip
-     await pausedQueue(queueBody, code);
+     pausedQueue(queueBody, code);
      return;
    }
 
 
    currSongFound = findCurrentInQueue(body.item.id, queueBody);
    if (!currSongFound){
-     await pausedQueue(queueBody, code);
+     pausedQueue(queueBody, code);
      return;
    }
 
@@ -105,8 +103,9 @@ async function updateQueues(){
    mongo.updateRoomQueue(code, finalResult);
 
    if (toDelete.length > 0) {
-     delete_songs = await spotify.deleteFromPlaylist(access_token, playlist_id, toDelete);
-     if (!delete_songs) console.log("Error deleting songs");
+     spotify.deleteFromPlaylist(access_token, playlist_id, toDelete);
+     //delete_songs = await spotify.deleteFromPlaylist(access_token, playlist_id, toDelete);
+     //if (!delete_songs) console.log("Error deleting songs");
    }
  }
 
