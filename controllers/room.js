@@ -22,7 +22,7 @@ const createRoom = async (req, res) => {
     return;
   }
 
-  create_playlist = await spotify.createPlaylist(access_token, user_id);
+  create_playlist = await spotify.createPlaylist(access_token, user_id, username);
 
   if (!create_playlist){
     res.clearCookie("access_token");

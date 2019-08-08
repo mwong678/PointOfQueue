@@ -37,7 +37,7 @@ function getBearer(res, code){
    json: true
   };
 
-  request.post(authOptions, function(error, response, body) {
+  request_old.post(authOptions, function(error, response, body) {
    if (!error && response.statusCode === 200) {
 
     var access_token = body.access_token,
@@ -72,7 +72,7 @@ async function getUserId(access_token){
      }
 }
 
-async function createPlaylist(access_token, user_id){
+async function createPlaylist(access_token, user_id, username){
 
   var response = {};
 
@@ -83,7 +83,7 @@ async function createPlaylist(access_token, user_id){
     'Content-Type': 'application/json'
    },
    body: JSON.stringify({
-    'name': 'PointOfQueue_' + util.generateRandomString(4)
+    'name': 'PointOfQueue_' + username
    })
   };
 
