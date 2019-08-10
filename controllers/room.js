@@ -16,7 +16,7 @@ const createRoom = async (req, res) => {
 
   if (!user_id){
     console.log("Error getting User Info");
-    req.session.destroy();
+    req.session = null;
     res.redirect("/");
     return;
   }
@@ -25,7 +25,7 @@ const createRoom = async (req, res) => {
 
   if (!create_playlist){
     console.log("Error creating Playlist");
-    req.session.destroy();
+    req.session = null;
     res.redirect("/");
     return;
   }
@@ -93,7 +93,7 @@ const deleteRoom = async (req, res) => {
    return;
  }
 
- req.session.destroy();
+ req.session = null;
  res.send({ result: "Success" });
 }
 

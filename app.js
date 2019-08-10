@@ -3,7 +3,7 @@ const express = require('express'),
       cors = require('cors'),
       querystring = require('querystring'),
       cookieParser = require('cookie-parser'),
-      session = require('express-session'),
+      cookieSession = require('cookie-session'),
       bodyParser = require('body-parser');
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -35,12 +35,21 @@ app.use(express.static(__dirname + '/public'));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.set('trust proxy', 1);
+app.use(cookieSession({
+  name: 'session',
+  keys: [(isProduction) ? process.env.secret : properties.secret]
+}));
+/*
 app.use(session({
   secret: (isProduction) ? process.env.secret : properties.secret,
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: isProduction }
+  cookie: { secure: isProduction },
+  store: new MongoStore()
 }));
+*/
+
 app.use('/', routes);
 
 mongo.connectToServer(function(err, client) {
@@ -61,7 +70,7 @@ mongo.connectToServer(function(err, client) {
 
  //deleteRoom2('nEIV');
  //deleteRoom2('wcLN');
- //deleteRoomHelper('EG61');
+ //deleteRoomHelper('lCu7');
 
 /*
  userCollection.find().toArray((err, items) => {
