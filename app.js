@@ -40,15 +40,6 @@ app.use(cookieSession({
   name: 'session',
   keys: [(isProduction) ? process.env.secret : properties.secret]
 }));
-/*
-app.use(session({
-  secret: (isProduction) ? process.env.secret : properties.secret,
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: isProduction },
-  store: new MongoStore()
-}));
-*/
 
 app.use('/', routes);
 
@@ -70,7 +61,7 @@ mongo.connectToServer(function(err, client) {
 
  //deleteRoom2('nEIV');
  //deleteRoom2('wcLN');
- //deleteRoomHelper('lCu7');
+ //deleteRoomHelper('EuhT');
 
 /*
  userCollection.find().toArray((err, items) => {

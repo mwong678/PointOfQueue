@@ -5,7 +5,8 @@ const mongo = require('../db/mongo'),
 const createRoom = async (req, res) => {
   access_token = req.cookies["access_token"];
   refresh_token = req.cookies["refresh_token"];
-  username = req.session.id;
+  //username = req.session.id;
+  username = util.generateRandomString(16);
 
   if (!access_token || !refresh_token) {
     spotify.authorize(res);
