@@ -1,5 +1,4 @@
 const mongo = require('../db/mongo'),
-      util = require('../util'),
       spotify = require('../util/spotify');
 
 const SECOND_IN_MILLIS = 1000;

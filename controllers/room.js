@@ -3,11 +3,11 @@ const mongo = require('../db/mongo'),
       spotify = require('../util/spotify');
 
 const createRoom = async (req, res) => {
-  username = req.cookies['username'];
-  access_token = req.cookies['access_token'];
-  refresh_token = req.cookies['refresh_token'];
+  access_token = req.cookies["access_token"];
+  refresh_token = req.cookies["refresh_token"];
+  username = req.session.id;
 
-  if (!access_token|| !refresh_token) {
+  if (!access_token || !refresh_token) {
     spotify.authorize(res);
     return;
   }
@@ -15,20 +15,18 @@ const createRoom = async (req, res) => {
   user_id = await spotify.getUserId(access_token);
 
   if (!user_id){
-    res.clearCookie("access_token");
-    res.clearCookie("refresh_token");
     console.log("Error getting User Info");
-    res.redirect("/room.html");
+    req.session.destroy();
+    res.redirect("/");
     return;
   }
 
   create_playlist = await spotify.createPlaylist(access_token, user_id, username);
 
   if (!create_playlist){
-    res.clearCookie("access_token");
-    res.clearCookie("refresh_token");
     console.log("Error creating Playlist");
-    res.redirect("/room.html");
+    req.session.destroy();
+    res.redirect("/");
     return;
   }
 
@@ -39,18 +37,21 @@ const createRoom = async (req, res) => {
                                      refresh_token);
 
   if (!dbResult) {
-    res.clearCookie("access_token");
-    res.clearCookie("refresh_token");
     console.log("Error creating room");
-    res.redirect("/room.html");
+    res.redirect("/");
     return;
   }
 
-  res.cookie("room_code", dbResult);
-  res.cookie("room_owner", username);
-  res.cookie("playlist_name", create_playlist.playlistName);
-  res.cookie("playlist", create_playlist.playlistURI.split(":")[2]);
-  res.redirect("/room.html");
+  req.session.access_token = access_token;
+  req.session.refresh_token = refresh_token;
+  req.session.room_code = dbResult;
+  req.session.room_owner = username;
+  req.session.playlist_name = create_playlist.playlistName;
+  req.session.playlist = create_playlist.playlistURI.split(":")[2];
+  res.clearCookie("access_token");
+  res.clearCookie("refresh_token");
+  res.cookie("poq", util.base64Encode(dbResult + ':' + username));
+  res.redirect("/");
 }
 
 
@@ -63,25 +64,20 @@ const findRoom = async (req, res) => {
     return;
   }
 
-  owner = roomResult.owner;
-  playlist = roomResult.playlist;
-  playlistName = roomResult.playlist_name;
-  access_token = roomResult.access_token;
-  refresh_token = roomResult.refresh_token;
-
-  res.cookie("access_token", access_token);
-  res.cookie("refresh_token", refresh_token);
-  res.cookie("room_code", req.body.code);
-  res.cookie("room_owner", owner);
-  res.cookie("playlist", playlist.split(":")[2]);
-  res.cookie("playlist_name", playlistName);
+  req.session.access_token = roomResult.access_token;
+  req.session.refresh_token = roomResult.refresh_token;
+  req.session.room_code = req.body.code;
+  req.session.room_owner = roomResult.owner;
+  req.session.playlist_name = roomResult.playlist_name;;
+  req.session.playlist = roomResult.playlist.split(":")[2];
+  res.cookie("poq", util.base64Encode(req.body.code + ':'));
   res.send({ result: "OK" });
 }
 
 const deleteRoom = async (req, res) => {
- code = req.cookies["room_code"];
- playlist = req.cookies["playlist"];
- access_token = req.cookies["access_token"];
+ code = req.session.room_code;
+ playlist = req.session.playlist;
+ access_token = req.session.access_token;
 
  delete_playlist = await spotify.deletePlaylist(access_token, playlist);
  if (!delete_playlist){
@@ -97,11 +93,13 @@ const deleteRoom = async (req, res) => {
    return;
  }
 
+ req.session.destroy();
  res.send({ result: "Success" });
 }
 
+/*
 const checkRoom = async (req, res) => {
-  username = req.cookies["username"];
+  username = req.session.id;
   isFound = false;
   rooms = await mongo.getAllRooms();
 
@@ -115,19 +113,20 @@ const checkRoom = async (req, res) => {
     for (var i = 0;i < rooms.length; i++){
       currRoom = rooms[i];
       code = currRoom.code;
-      owner = currRoom.owner;
+      room_owner = currRoom.owner;
       access_token = currRoom.access_token;
       refresh_token = currRoom.refresh_token;
       playlistURI = currRoom.playlist;
       playlistName = currRoom.playlist_name;
       if (username == owner){
         isFound = true;
-        res.cookie("access_token", access_token);
-        res.cookie("refresh_token", refresh_token);
-        res.cookie("room_code", code);
-        res.cookie("room_owner", owner);
-        res.cookie("playlist_name", playlistName);
-        res.cookie("playlist", playlistURI.split(":")[2]);
+        req.session.access_token = access_token;
+        req.session.refresh_token = refresh_token;
+        req.session.room_code = code;
+        req.session.room_owner = room_owner;
+        req.session.playlist_name = playlistName;
+        req.session.playlist = playlist.split(":")[2];
+        res.cookie("poq", req.body.code + ':');
         res.status(200);
         res.send({ result: "OK" });
       }
@@ -140,12 +139,12 @@ const checkRoom = async (req, res) => {
 
   return;
 }
+*/
 
 const queue = async (req, res) => {
-
- room_code = req.cookies["room_code"];
- req_access_token = req.cookies["access_token"];
- req_refresh_token = req.cookies["refresh_token"];
+ room_code = req.session.room_code;
+ req_access_token = req.session.access_token;
+ req_refresh_token = req.session.req_refresh_token;
  result = {};
 
  roomResult = await mongo.getRoomCodeInDB(room_code);
@@ -159,19 +158,16 @@ const queue = async (req, res) => {
  result.queue = roomResult.queue;
 
  if (req_access_token != roomResult.access_token) {
-  console.log("Changed to new access token in cookies!");
-  res.cookie("access_token", roomResult.access_token);
+  console.log("Changed to new access token!");
+  req.session.access_token = roomResult.access_token;
  }
 
- res.send({
-  result: result
- });
+ res.send({ result: result });
 }
 
 module.exports = {
   createRoom,
   findRoom,
   deleteRoom,
-  checkRoom,
   queue
 }

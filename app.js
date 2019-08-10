@@ -3,27 +3,30 @@ const express = require('express'),
       cors = require('cors'),
       querystring = require('querystring'),
       cookieParser = require('cookie-parser'),
+      session = require('express-session'),
       bodyParser = require('body-parser');
 
+const isProduction = process.env.NODE_ENV === 'production';
 const routes = require('./routes');
 const mongo = require('./db/mongo');
 const background = require('./util/background');
+const properties = (isProduction) ? '' : require('./properties.json');
 
-const isProduction = process.env.NODE_ENV === 'production';
+
 var port = process.env.PORT || 8081;
 
 var app = express();
 
 var https_redirect = function (req, res, next) {
-       if (req.headers["x-forwarded-proto"] === "https") {
-          next();
-       } else {
-         if (isProduction){
-           res.redirect('https://' + req.headers.host + req.url);
-         }else{
-           next();
-         }
-       }
+  if (req.headers["x-forwarded-proto"] === "https") {
+    next();
+  } else {
+    if (isProduction){
+      res.redirect('https://' + req.headers.host + req.url);
+    }else{
+      next();
+    }
+  }
 };
 
 app.use(cors());
@@ -32,6 +35,12 @@ app.use(express.static(__dirname + '/public'));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(session({
+  secret: (isProduction) ? process.env.secret : properties.secret,
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: isProduction }
+}));
 app.use('/', routes);
 
 mongo.connectToServer(function(err, client) {
@@ -52,11 +61,13 @@ mongo.connectToServer(function(err, client) {
 
  //deleteRoom2('nEIV');
  //deleteRoom2('wcLN');
- //deleteRoom2('0zkF');
+ //deleteRoomHelper('EG61');
 
+/*
  userCollection.find().toArray((err, items) => {
-  console.log(items);
+  //console.log(items);
  });
+ */
 
  roomCollection.find().toArray((err, items) => {
   console.log(items);

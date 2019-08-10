@@ -1,13 +1,28 @@
-module.exports = {
+const btoa = require('btoa'),
+      atob = require('atob');
 
-  generateRandomString: function(length) {
-   var text = '';
-   var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+function base64Encode(data){
+  return btoa(data);
+}
 
-   for (var i = 0; i < length; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-   }
-   return text;
+function base64Decode(data){
+  return atob(data);
+}
+
+function generateRandomString(length){
+  var text = '';
+  var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+  for (var i = 0; i < length; i++) {
+   text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
+  return text;
+}
+
+
+module.exports = {
+  generateRandomString,
+  base64Encode,
+  base64Decode
 
 }

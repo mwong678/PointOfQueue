@@ -27,9 +27,8 @@ const callback = async (req, res) => {
 }
 
 const search = async (req, res) => {
- access_token = req.body.access_token;
- refresh_token = req.body.refresh_token;
- username = req.body.username;
+ access_token = req.session.access_token;
+ refresh_token = req.session.refresh_token;
 
  searchResult = await spotify.search(access_token, req.body.query);
 
@@ -50,8 +49,8 @@ const addToQueue = async (req, res) => {
    songInfo.song = req.body.song;
    songInfo.artist = req.body.artist;
    songInfo.uri = req.body.uri;
-   access_token = req.cookies["access_token"];
-   playlist_id = req.cookies["playlist"];
+   access_token = req.session.access_token
+   playlist_id = req.session.playlist;
 
    addToQueueResult = await spotify.addSongToQueue(access_token, playlist_id, req.body.uri, songInfo);
 

@@ -32,7 +32,7 @@ function getBearer(res, code){
     grant_type: 'authorization_code'
    },
    headers: {
-    'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
+    'Authorization': 'Basic ' + util.base64Encode(client_id + ':' + client_secret)
    },
    json: true
   };
@@ -228,7 +228,7 @@ async function refreshToken(refresh_token, callback) {
  var authOptions = {
   url: 'https://accounts.spotify.com/api/token',
   headers: {
-   'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
+   'Authorization': 'Basic ' + util.base64Encode(client_id + ':' + client_secret)
   },
   form: {
    grant_type: 'refresh_token',
