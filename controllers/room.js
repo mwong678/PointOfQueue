@@ -150,6 +150,7 @@ const queue = async (req, res) => {
 
  roomResult = await mongo.getRoomCodeInDB(room_code);
  if (!roomResult){
+   req.session = null;
    res.status(404);
    res.send({result: "DELETED"});
    return;
