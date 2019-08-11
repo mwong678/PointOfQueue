@@ -2,7 +2,8 @@ const mongo = require('../db/mongo'),
       util = require('../util'),
       spotify = require('../util/spotify');
 
-const DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
+const DAY_IN_MILLIS = 24 * 60 * 60 * 1000,
+      isProduction = (process.env.NODE_ENV === 'production');
 
 const createRoom = async (req, res) => {
   access_token = req.cookies["access_token"];
@@ -52,7 +53,7 @@ const createRoom = async (req, res) => {
   req.session.playlist = create_playlist.playlistURI.split(":")[2];
   res.clearCookie("access_token");
   res.clearCookie("refresh_token");
-  res.cookie("poq", util.base64Encode(dbResult + ':' +  req.session.playlist + ":owner"), { maxAge: DAY_IN_MILLIS});
+  res.cookie("poq", util.base64Encode(dbResult + ':' +  req.session.playlist + ":owner"), { maxAge: DAY_IN_MILLIS, secure: isProduction });
   res.redirect("/");
 }
 
@@ -66,7 +67,7 @@ const findRoom = async (req, res) => {
   req.session.room_code = req.body.code;
   req.session.playlist_name = roomResult.playlist_name;;
   req.session.playlist = roomResult.playlist.split(":")[2];
-  res.cookie("poq", util.base64Encode(req.body.code + ':' + req.session.playlist + ":user"), { maxAge: DAY_IN_MILLIS});
+  res.cookie("poq", util.base64Encode(req.body.code + ':' + req.session.playlist + ":user"), { maxAge: DAY_IN_MILLIS, secure: isProduction});
   res.sendStatus(200);
 }
 
