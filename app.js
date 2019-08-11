@@ -38,9 +38,9 @@ app.use(bodyParser.json());
 app.set('trust proxy', 1);
 app.use(cookieSession({
   name: 'session',
-  keys: [(isProduction) ? process.env.secret : properties.secret]
+  secret: (isProduction) ? process.env.secret : properties.secret,
+  maxAge: 24 * 60 * 60 * 1000
 }));
-
 app.use('/', routes);
 
 mongo.connectToServer(function(err, client) {
