@@ -58,18 +58,19 @@ $(document).ready(function() {
     return;
   }
 
-  poq = atob(poq);
-  room_code = poq.split(":")[0];
-  room_owner = poq.split(":")[1];
+  poq = atob(poq).split(":");
+  room_code = poq[0];
+  playlist_id = poq[1];
+  role = poq[2];
 
   //verify room code/owner?
 
   document.getElementById("labelCode").textContent = room_code;
 
-  if (room_owner) {
+  if (role == "owner") {
     newA = document.createElement('a');
     newA.appendChild(document.createTextNode("Open playlist in Spotify"));
-    newA.href = "https://open.spotify.com/playlist/" + getCookie('playlist');
+    newA.href = "https://open.spotify.com/playlist/" + playlist_id;
     $("#playlistLabel").append(newA);
     $("#ownerInstructions").css("display", "block");
     $("#userInstructions").css("display", "none");

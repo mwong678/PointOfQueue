@@ -33,14 +33,11 @@ const search = async (req, res) => {
  searchResult = await spotify.search(access_token, req.body.query);
 
  if (!searchResult){
-   res.status(404);
-   res.send("Error searching");
+   res.status(404).send("Error searching");
    return;
  }
 
- res.send({
-  result: searchResult
- });
+ res.send({ result: searchResult });
 
 }
 
@@ -55,14 +52,11 @@ const addToQueue = async (req, res) => {
    addToQueueResult = await spotify.addSongToQueue(access_token, playlist_id, req.body.uri, songInfo);
 
    if (!addToQueueResult){
-     res.status(404);
-     res.send("Error adding to queue");
+     res.status(404).send("Error adding to queue");
      return;
    }
 
-   res.send({
-    result: "Added " + songInfo.song + " by " + songInfo.artist + " to the queue"
-   });
+   res.send({ result: "Added " + songInfo.song + " by " + songInfo.artist + " to the queue" });
 
 }
 

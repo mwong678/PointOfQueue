@@ -40,7 +40,7 @@ let result = await roomCollection.findOne({
  return result == null ? false : true;
 }
 
-async function addRoomInDB(username, playlistURI, playlistName, access_token, refresh_token){
+async function addRoomInDB(playlistURI, playlistName, access_token, refresh_token){
  var code;
  var findResult = true;
  while (findResult) {
@@ -49,7 +49,6 @@ async function addRoomInDB(username, playlistURI, playlistName, access_token, re
  }
  var item = {
   code: code,
-  owner: username,
   playlist: playlistURI,
   playlist_name: playlistName,
   queue: [],

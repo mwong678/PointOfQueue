@@ -5,8 +5,6 @@ const mongo = require('../db/mongo'),
 const createRoom = async (req, res) => {
   access_token = req.cookies["access_token"];
   refresh_token = req.cookies["refresh_token"];
-  //username = req.session.id;
-  username = util.generateRandomString(16);
 
   if (!access_token || !refresh_token) {
     spotify.authorize(res);
@@ -22,7 +20,7 @@ const createRoom = async (req, res) => {
     return;
   }
 
-  create_playlist = await spotify.createPlaylist(access_token, user_id, username);
+  create_playlist = await spotify.createPlaylist(access_token, user_id);
 
   if (!create_playlist){
     console.log("Error creating Playlist");
@@ -31,14 +29,14 @@ const createRoom = async (req, res) => {
     return;
   }
 
-  dbResult = await mongo.addRoomInDB(username,
-                                     create_playlist.playlistURI,
+  dbResult = await mongo.addRoomInDB(create_playlist.playlistURI,
                                      create_playlist.playlistName,
                                      access_token,
                                      refresh_token);
 
   if (!dbResult) {
     console.log("Error creating room");
+    req.session = null;
     res.redirect("/");
     return;
   }
@@ -46,12 +44,11 @@ const createRoom = async (req, res) => {
   req.session.access_token = access_token;
   req.session.refresh_token = refresh_token;
   req.session.room_code = dbResult;
-  req.session.room_owner = username;
   req.session.playlist_name = create_playlist.playlistName;
   req.session.playlist = create_playlist.playlistURI.split(":")[2];
   res.clearCookie("access_token");
   res.clearCookie("refresh_token");
-  res.cookie("poq", util.base64Encode(dbResult + ':' + username));
+  res.cookie("poq", util.base64Encode(dbResult + ':' +  req.session.playlist + ":owner"));
   res.redirect("/");
 }
 
@@ -60,18 +57,16 @@ const findRoom = async (req, res) => {
 
   roomResult = await mongo.getRoomCodeInDB(req.body.code);
   if (!roomResult){
-    res.status(404);
-    res.send("Error finding room");
+    res.status(404).send("Error finding room");
     return;
   }
 
   req.session.access_token = roomResult.access_token;
   req.session.refresh_token = roomResult.refresh_token;
   req.session.room_code = req.body.code;
-  req.session.room_owner = roomResult.owner;
   req.session.playlist_name = roomResult.playlist_name;;
   req.session.playlist = roomResult.playlist.split(":")[2];
-  res.cookie("poq", util.base64Encode(req.body.code + ':'));
+  res.cookie("poq", util.base64Encode(req.body.code + ':' + req.session.playlist + ":user"));
   res.send({ result: "OK" });
 }
 
@@ -82,65 +77,19 @@ const deleteRoom = async (req, res) => {
 
  delete_playlist = await spotify.deletePlaylist(access_token, playlist);
  if (!delete_playlist){
-   res.status(404);
-   res.send("Error deleting playlist");
+   res.status(404).send("Error deleting playlist");
    return;
  }
 
  dbResult = await mongo.deleteRoom(code);
  if (!dbResult){
-   res.status(404);
-   res.send("Error deleting room");
+   res.status(404).send("Error deleting room");
    return;
  }
 
  req.session = null;
  res.send({ result: "Success" });
 }
-
-/*
-const checkRoom = async (req, res) => {
-  username = req.session.id;
-  isFound = false;
-  rooms = await mongo.getAllRooms();
-
-  if (!rooms || (rooms && rooms.length == 0)){
-    res.status(200);
-    res.send({ result: "" });
-    return;
-  }
-
-  if (rooms && rooms.length > 0) {
-    for (var i = 0;i < rooms.length; i++){
-      currRoom = rooms[i];
-      code = currRoom.code;
-      room_owner = currRoom.owner;
-      access_token = currRoom.access_token;
-      refresh_token = currRoom.refresh_token;
-      playlistURI = currRoom.playlist;
-      playlistName = currRoom.playlist_name;
-      if (username == owner){
-        isFound = true;
-        req.session.access_token = access_token;
-        req.session.refresh_token = refresh_token;
-        req.session.room_code = code;
-        req.session.room_owner = room_owner;
-        req.session.playlist_name = playlistName;
-        req.session.playlist = playlist.split(":")[2];
-        res.cookie("poq", req.body.code + ':');
-        res.status(200);
-        res.send({ result: "OK" });
-      }
-    }
-    if (!isFound){
-      res.status(200);
-      res.send({ result: "" });
-    }
-  }
-
-  return;
-}
-*/
 
 const queue = async (req, res) => {
  room_code = req.session.room_code;
@@ -151,8 +100,7 @@ const queue = async (req, res) => {
  roomResult = await mongo.getRoomCodeInDB(room_code);
  if (!roomResult){
    req.session = null;
-   res.status(404);
-   res.send({result: "DELETED"});
+   res.status(404).send({result: "DELETED"});
    return;
  }
 

@@ -72,7 +72,7 @@ async function getUserId(access_token){
      }
 }
 
-async function createPlaylist(access_token, user_id, username){
+async function createPlaylist(access_token, user_id){
 
   var response = {};
 
@@ -83,7 +83,7 @@ async function createPlaylist(access_token, user_id, username){
     'Content-Type': 'application/json'
    },
    body: JSON.stringify({
-    'name': 'PointOfQueue_' + username
+    'name': 'PointOfQueue'
    })
   };
 
