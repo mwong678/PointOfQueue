@@ -114,13 +114,12 @@ function deleteRoom() {
     $.ajax({
       type: "GET",
       url: '/deleteroom',
-      dataType: 'json',
       success: function(data) {
         deleteCookie("poq");
         location.reload();
       },
       error: function(res, error) {
-        toastr.error(res.responseText);
+        toastr.error("Couldn't delete room");
       }
     });
   }
@@ -145,12 +144,11 @@ function findRoom() {
     data: {
       code: code
     },
-    dataType: 'json',
     success: function(data) {
       location.reload();
     },
     error: function(res, error) {
-      toastr.error(res.responseText);
+      toastr.error("Couldn't find room");
     }
   });
 }
@@ -220,15 +218,14 @@ function searchSongs() {
 
       var tapped = false;
 
-
       $(".resultItem").on("touchstart", function(event) {
         if (!tapped) {
           tapped = setTimeout(function() {
-            tapped = null
-          }, 300); //wait 300ms then run single click code
-        } else { //tapped within 300ms of last tap. double tap
-          clearTimeout(tapped); //stop single tap callback
-          tapped = null
+            tapped = null;
+          }, 300);
+        } else {
+          clearTimeout(tapped);
+          tapped = null;
           var touchedItem = $(this);
           var uri = event.currentTarget.id;
           var song = event.currentTarget.children[0].innerHTML;
@@ -260,13 +257,11 @@ function addToQueue(uri, song, artist) {
       song: song,
       artist: artist
     },
-    dataType: 'json',
     success: function(data) {
-      toastr.success(data.result);
+      toastr.success("Added " + song + " by " + artist + " to the queue");
     },
     error: function(res, error) {
-      var result = JSON.parse(res.responseText);
-      toastr.error(result.result);
+      toastr.error("Error adding to queue");
     }
   });
 
@@ -318,7 +313,6 @@ function getQueue() {
     },
     error: function(res, error) {
       if (JSON.parse(res.responseText).result == "DELETED") {
-        toastr.error("Room doesn't exist!");
         deleteCookie("poq");
         location.reload();
       }

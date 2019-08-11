@@ -27,18 +27,11 @@ const callback = async (req, res) => {
 }
 
 const search = async (req, res) => {
- access_token = req.session.access_token;
- refresh_token = req.session.refresh_token;
+ searchResult = await spotify.search(req.session.access_token, req.body.query);
 
- searchResult = await spotify.search(access_token, req.body.query);
-
- if (!searchResult){
-   res.status(404).send("Error searching");
-   return;
- }
+ if (!searchResult) res.status(404).send({result: "Error searching"});
 
  res.send({ result: searchResult });
-
 }
 
 const addToQueue = async (req, res) => {
@@ -51,13 +44,9 @@ const addToQueue = async (req, res) => {
 
    addToQueueResult = await spotify.addSongToQueue(access_token, playlist_id, req.body.uri, songInfo);
 
-   if (!addToQueueResult){
-     res.status(404).send("Error adding to queue");
-     return;
-   }
+   if (!addToQueueResult) res.sendStatus(404);
 
-   res.send({ result: "Added " + songInfo.song + " by " + songInfo.artist + " to the queue" });
-
+   res.sendStatus(200);
 }
 
 module.exports = {

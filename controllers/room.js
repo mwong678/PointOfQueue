@@ -2,12 +2,16 @@ const mongo = require('../db/mongo'),
       util = require('../util'),
       spotify = require('../util/spotify');
 
+const DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
+
 const createRoom = async (req, res) => {
   access_token = req.cookies["access_token"];
   refresh_token = req.cookies["refresh_token"];
 
   if (!access_token || !refresh_token) {
-    spotify.authorize(res);
+    state = util.generateRandomString(16);
+    res.cookie("spotify_auth_state", state);
+    res.redirect(spotify.authorize(state));
     return;
   }
 
@@ -48,26 +52,22 @@ const createRoom = async (req, res) => {
   req.session.playlist = create_playlist.playlistURI.split(":")[2];
   res.clearCookie("access_token");
   res.clearCookie("refresh_token");
-  res.cookie("poq", util.base64Encode(dbResult + ':' +  req.session.playlist + ":owner"), { maxAge: 24 * 60 * 60 * 1000});
+  res.cookie("poq", util.base64Encode(dbResult + ':' +  req.session.playlist + ":owner"), { maxAge: DAY_IN_MILLIS});
   res.redirect("/");
 }
 
 
 const findRoom = async (req, res) => {
-
   roomResult = await mongo.getRoomCodeInDB(req.body.code);
-  if (!roomResult){
-    res.status(404).send("Error finding room");
-    return;
-  }
+  if (!roomResult) res.sendStatus(404);
 
   req.session.access_token = roomResult.access_token;
   req.session.refresh_token = roomResult.refresh_token;
   req.session.room_code = req.body.code;
   req.session.playlist_name = roomResult.playlist_name;;
   req.session.playlist = roomResult.playlist.split(":")[2];
-  res.cookie("poq", util.base64Encode(req.body.code + ':' + req.session.playlist + ":user"), { maxAge: 24 * 60 * 60 * 1000});
-  res.send({ result: "OK" });
+  res.cookie("poq", util.base64Encode(req.body.code + ':' + req.session.playlist + ":user"), { maxAge: DAY_IN_MILLIS});
+  res.sendStatus(200);
 }
 
 const deleteRoom = async (req, res) => {
@@ -76,19 +76,13 @@ const deleteRoom = async (req, res) => {
  access_token = req.session.access_token;
 
  delete_playlist = await spotify.deletePlaylist(access_token, playlist);
- if (!delete_playlist){
-   res.status(404).send("Error deleting playlist");
-   return;
- }
+ if (!delete_playlist) res.sendStatus(404);
 
  dbResult = await mongo.deleteRoom(code);
- if (!dbResult){
-   res.status(404).send("Error deleting room");
-   return;
- }
+ if (!dbResult) res.sendStatus(404);
 
  req.session = null;
- res.send({ result: "Success" });
+ res.sendStatus(200);
 }
 
 const queue = async (req, res) => {

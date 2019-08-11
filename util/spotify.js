@@ -4,23 +4,20 @@ const querystring = require('querystring'),
       request = require('request-promise'),
       request_old = require('request');
 
-const stateKey = 'spotify_auth_state';
 const client_id = (process.env.PORT) ? process.env.client_id : properties.client_id;
 const client_secret = (process.env.PORT) ? process.env.client_secret :  properties.client_secret;
 const redirect_uri = (process.env.PORT) ? process.env.redirect_uri : properties.redirect_uri_local;
 const scope = 'user-read-private user-read-email playlist-modify-public playlist-modify-private user-read-currently-playing user-read-playback-state user-modify-playback-state';
 
-function authorize(res){
-  var state = util.generateRandomString(16);
-  res.cookie(stateKey, state);
-  res.redirect('https://accounts.spotify.com/authorize?' +
+function authorize(state){
+  return 'https://accounts.spotify.com/authorize?' +
    querystring.stringify({
     response_type: 'code',
     client_id: client_id,
     scope: scope,
     redirect_uri: redirect_uri,
     state: state
-  }));
+  });
 }
 
 function getBearer(res, code){
@@ -67,7 +64,7 @@ async function getUserId(access_token){
        user_id = await request.get(getUserIdOptions);
        return user_id.id;
      }catch(e){
-       console.log("ERROR CREATING ROOM -> " + e.message);
+       console.log("ERROR GETTING USER ID -> " + e.message);
        return null;
      }
 }

@@ -37,16 +37,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.set('trust proxy', 1);
 app.use(cookieSession({
-  name: 'session',
+  name: "session",
   secret: (isProduction) ? process.env.secret : properties.secret,
-  maxAge: 24 * 60 * 60 * 1000
+  maxAge: 24 * 60 * 60 * 1000,
+  cookies: {secure: isProduction}
 }));
 app.use('/', routes);
 
 mongo.connectToServer(function(err, client) {
  if (err) console.log(err);
  myDB = mongo.getDb();
- userCollection = myDB.collection("users");
  roomCollection = myDB.collection("rooms");
 
  var deleteRoomHelper = async function(code) {
@@ -61,13 +61,7 @@ mongo.connectToServer(function(err, client) {
 
  //deleteRoom2('nEIV');
  //deleteRoom2('wcLN');
- //deleteRoomHelper('EuhT');
-
-/*
- userCollection.find().toArray((err, items) => {
-  //console.log(items);
- });
- */
+ //deleteRoomHelper('ngzT');
 
  roomCollection.find().toArray((err, items) => {
   console.log(items);
