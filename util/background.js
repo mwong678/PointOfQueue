@@ -25,7 +25,7 @@ async function updateQueues(){
    var playlist_id = playlistURI.split(":")[2];
 
    queueBody = await spotify.getQueue(access_token, playlist_id);
-   if (!queueBody || queueBody.items.length == 0) return;
+   if (!queueBody || !queueBody.items || queueBody.items.length == 0) return;
 
    if (queueBody == 'EXPIRED'){
      new_access_token = await spotify.refreshToken(refresh_token);
