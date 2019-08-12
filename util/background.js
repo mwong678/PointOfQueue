@@ -25,7 +25,7 @@ async function updateQueues(){
    var playlist_id = playlistURI.split(":")[2];
 
    queueBody = await spotify.getQueue(access_token, playlist_id);
-   if (!queueBody || !queueBody.items || queueBody.items.length == 0) return;
+   if (!queueBody) return;
 
    if (queueBody == 'EXPIRED'){
      new_access_token = await spotify.refreshToken(refresh_token);
@@ -109,6 +109,8 @@ async function updateQueues(){
 }
 
 function findCurrentInQueue(id, queueBody){
+  if (!queueBody.items) return;
+  
   for (var i = 0; i < queueBody.items.length; i++) {
    var currTrack = queueBody.items[i].track;
    if (currTrack.id == id) {
