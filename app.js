@@ -50,10 +50,9 @@ mongo.connectToServer(function(err, client) {
  //deleteRoom2('nEIV');
  //deleteRoom2('wcLN');
  //mongo.deleteRoom('ngzT');
-
- roomCollection.find().toArray((err, items) => {
-  console.log(items);
- });
+ mongo.getAllRooms().then(function(result){
+   console.log(result);
+ })
 
  setInterval(async () => {await background.updateQueues()}, 1000);
  app.listen(port, () => console.log('Listening on ' + port));
