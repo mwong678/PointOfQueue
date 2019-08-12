@@ -18,23 +18,8 @@ function getDb() {
   return db;
 }
 
-async function isUserNameInDB(username) {
- result = userCollection.findOne({
-  username: username
- });
- return result;
-}
-
-async function addUserInDB(username, password) {
- result = userCollection.insertOne({
-  username: username,
-  password: password
- });
- return result;
-}
-
 async function isRoomCodeInDB(code) {
-let result = await roomCollection.findOne({
+ let result = await roomCollection.findOne({
   code: code
  });
  return result == null ? false : true;
@@ -79,13 +64,6 @@ async function getRoomCodeInDB(code) {
  return result;
 }
 
-async function getUserInDB(username) {
- let result = await userCollection.findOne({
-  username: username
- });
- return result;
-}
-
 async function getAllRooms() {
  let result = await roomCollection.find().toArray();
  return result;
@@ -119,7 +97,6 @@ async function updateCurrTrack(code, newCurrTrack) {
 }
 
 async function updateRoomQueue(code, newQueue) {
-
  let query = {
   code: code
  };
@@ -135,13 +112,10 @@ async function updateRoomQueue(code, newQueue) {
 module.exports = {
   connectToServer,
   getDb,
-  isUserNameInDB,
-  addUserInDB,
   isRoomCodeInDB,
   addRoomInDB,
   deleteRoom,
   getRoomCodeInDB,
-  getUserInDB,
   getAllRooms,
   updateRoomCodesInDB,
   updateCurrTrack,

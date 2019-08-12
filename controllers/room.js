@@ -12,8 +12,7 @@ const createRoom = async (req, res) => {
   if (!access_token || !refresh_token) {
     state = util.generateRandomString(16);
     res.cookie("spotify_auth_state", state);
-    res.redirect(spotify.authorize(state));
-    return;
+    return res.redirect(spotify.authorize(state));
   }
 
   user_id = await spotify.getUserId(access_token);
@@ -21,8 +20,7 @@ const createRoom = async (req, res) => {
   if (!user_id){
     console.log("Error getting User Info");
     req.session = null;
-    res.redirect("/");
-    return;
+    return res.redirect("/");
   }
 
   create_playlist = await spotify.createPlaylist(access_token, user_id);
@@ -30,8 +28,7 @@ const createRoom = async (req, res) => {
   if (!create_playlist){
     console.log("Error creating Playlist");
     req.session = null;
-    res.redirect("/");
-    return;
+    return res.redirect("/");
   }
 
   dbResult = await mongo.addRoomInDB(create_playlist.playlistURI,
@@ -42,8 +39,7 @@ const createRoom = async (req, res) => {
   if (!dbResult) {
     console.log("Error creating room");
     req.session = null;
-    res.redirect("/");
-    return;
+    return res.redirect("/");
   }
 
   req.session.access_token = access_token;
@@ -87,22 +83,18 @@ const deleteRoom = async (req, res) => {
 }
 
 const queue = async (req, res) => {
- room_code = req.session.room_code;
- req_access_token = req.session.access_token;
- req_refresh_token = req.session.req_refresh_token;
  result = {};
 
- roomResult = await mongo.getRoomCodeInDB(room_code);
+ roomResult = await mongo.getRoomCodeInDB(req.session.room_code);
  if (!roomResult){
    req.session = null;
    res.status(404).send({result: "DELETED"});
-   return;
  }
 
  result.currentTrack = roomResult.currentTrack;
  result.queue = roomResult.queue;
 
- if (req_access_token != roomResult.access_token) {
+ if (req.session.access_token != roomResult.access_token) {
   console.log("Changed to new access token!");
   req.session.access_token = roomResult.access_token;
  }
