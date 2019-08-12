@@ -3,12 +3,11 @@ const MongoClient = require('mongodb').MongoClient,
       util = require('../util');
 const dbURI = (process.env.PORT) ? process.env.dbURI : properties.dbURI;
 
-var db, userCollection, roomCollection;
+var db, roomCollection;
 
 function connectToServer(callback) {
   MongoClient.connect(dbURI, { useNewUrlParser: true }, function(err, client) {
     db = client.db('poq');
-    userCollection = db.collection("users");
     roomCollection = db.collection("rooms");
     return callback(err);
   } );
