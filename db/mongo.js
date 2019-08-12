@@ -10,7 +10,7 @@ function connectToServer(callback) {
     db = client.db('poq');
     roomCollection = db.collection("rooms");
     return callback(err);
-  } );
+  });
 }
 
 function getDb() {

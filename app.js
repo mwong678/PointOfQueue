@@ -46,22 +46,10 @@ app.use('/', routes);
 
 mongo.connectToServer(function(err, client) {
  if (err) console.log(err);
- myDB = mongo.getDb();
- roomCollection = myDB.collection("rooms");
-
- var deleteRoomHelper = async function(code) {
-  await roomCollection.deleteOne({
-   code: code
-  }, (err, result) => {
-   if (err) {
-    throw err;
-   }
-  });
- }
 
  //deleteRoom2('nEIV');
  //deleteRoom2('wcLN');
- //deleteRoomHelper('ngzT');
+ //mongo.deleteRoom('ngzT');
 
  roomCollection.find().toArray((err, items) => {
   console.log(items);
