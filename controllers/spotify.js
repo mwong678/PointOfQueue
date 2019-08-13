@@ -1,5 +1,6 @@
 const querystring = require('querystring'),
       mongo = require('../db/mongo'),
+      logger = require('../util/logger');
       spotify = require('../util/spotify');
 
 const stateKey = 'spotify_auth_state';
@@ -19,7 +20,7 @@ const callback = async (req, res) => {
       spotify.getBearer(res, code);
     }
   }catch(e){
-    console.log("ERROR CALLING BACK -> " + e.message);
+    logger.log("ERROR CALLING BACK -> " + e.message);
   }
 }
 

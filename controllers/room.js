@@ -48,7 +48,7 @@ const createRoom = async (req, res) => {
 
 const findRoom = async (req, res) => {
   roomResult = await mongo.getRoomCodeInDB(req.body.code);
-  if (roomResult == null) return res.sendStatus(404)
+  if (!roomResult) return res.sendStatus(404)
 
   req.session.access_token = roomResult.access_token;
   req.session.refresh_token = roomResult.refresh_token;

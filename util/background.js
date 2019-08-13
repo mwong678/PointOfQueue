@@ -7,20 +7,20 @@ const HOUR_IN_MILLIS = 60 * MINUTE_IN_MILLIS;
 const EXPIRE_TIME_IN_MILLIS = 3 * HOUR_IN_MILLIS;
 
 async function updateQueues(){
-  var rooms = await mongo.getAllRooms();
+  let rooms = await mongo.getAllRooms();
 
   if (!rooms || (rooms && rooms.length == 0)) return;
 
   for (var i = 0; i < rooms.length; i++) {
-   var currRoom = rooms[i];
-   var code = currRoom.code;
-   var queue = currRoom.queue;
-   var owner = currRoom.owner;
-   var created_at = currRoom.created_at;
-   var access_token = currRoom.access_token;
-   var refresh_token = currRoom.refresh_token;
-   var playlistURI = currRoom.playlist;
-   var playlist_id = playlistURI.split(":")[2];
+   let currRoom = rooms[i];
+   let code = currRoom.code;
+   let queue = currRoom.queue;
+   let owner = currRoom.owner;
+   let created_at = currRoom.created_at;
+   let access_token = currRoom.access_token;
+   let refresh_token = currRoom.refresh_token;
+   let playlistURI = currRoom.playlist;
+   let playlist_id = playlistURI.split(":")[2];
 
    queueBody = await spotify.getQueue(access_token, playlist_id);
    if (!queueBody) return;
@@ -92,9 +92,7 @@ async function updateQueues(){
 
    mongo.updateRoomQueue(code, finalResult);
 
-   if (toDelete.length > 0) {
-     spotify.deleteFromPlaylist(access_token, playlist_id, toDelete);
-   }
+   if (toDelete.length > 0) spotify.deleteFromPlaylist(access_token, playlist_id, toDelete);
  }
 
 }

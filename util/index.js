@@ -24,5 +24,4 @@ module.exports = {
   generateRandomString,
   base64Encode,
   base64Decode
-
 }
