@@ -1,7 +1,8 @@
-const properties = (process.env.PORT) ? '' : require('../properties.json');
 const MongoClient = require('mongodb').MongoClient,
-      util = require('../util');
-const dbURI = (process.env.PORT) ? process.env.dbURI : properties.dbURI;
+      logger = require('../util/logger'),
+      util = require('../util'),
+      properties = (process.env.PORT) ? '' : require('../properties.json'),
+      dbURI = (process.env.PORT) ? process.env.dbURI : properties.dbURI;
 
 var db, roomCollection;
 
@@ -18,9 +19,7 @@ function getDb() {
 }
 
 async function isRoomCodeInDB(code) {
- let result = await roomCollection.findOne({
-  code: code
- });
+ result = await roomCollection.findOne({ code: code });
  return result == null ? false : true;
 }
 
@@ -45,67 +44,79 @@ async function addRoomInDB(playlistURI, playlistName, access_token, refresh_toke
   refresh_token: refresh_token,
   created_at: Date.now()
  }
- let insertResult = await roomCollection.insertOne(item);
- return insertResult ? code : null;
+ try {
+   insertResult = await roomCollection.insertOne(item);
+   return code;
+ }catch(e){
+   logger.log("ERROR CREATING ROOM IN DB -> " + e.message, 'error');
+   return null;
+ }
 }
 
 async function deleteRoom(code){
-  let result = await roomCollection.deleteOne({
-   code: code
-  });
-  return result;
+  try{
+    result = await roomCollection.deleteOne({ code: code });
+    return result;
+  }catch(e){
+    logger.log("ERROR DELETING ROOM IN DB -> " + e.message, 'error');
+    return null;
+  }
 }
 
 async function getRoomCodeInDB(code) {
- let result = await roomCollection.findOne({
-  code: code
- });
- return result;
+  try{
+    result = await roomCollection.findOne({ code: code });
+    return result;
+  }catch(e){
+    logger.log("ERROR GETTING ROOM IN DB -> " + e.message, 'error');
+    return null;
+  }
 }
 
 async function getAllRooms() {
- let result = await roomCollection.find().toArray();
- return result;
+  try{
+     result = await roomCollection.find().toArray();
+     return result;
+  }catch(e){
+    logger.log("ERROR GETTING ALL ROOMS IN DB -> " + e.message, 'error');
+    return null;
+  }
 }
 
 async function updateRoomCodesInDB(code, access_token, refresh_token) {
- let query = {
-  code: code
- };
- let updated = {
-  $set: {
-   access_token: access_token,
-   refresh_token: refresh_token
-  }
- };
- let result = await roomCollection.updateOne(query, updated);
- return result;
+ query = { code: code };
+ updated = { $set: { access_token: access_token, refresh_token: refresh_token } };
+ try{
+   result = await roomCollection.updateOne(query, updated);
+   return result;
+ }catch(e){
+   logger.log("ERROR UPDATING ROOM IN DB -> " + e.message, 'error');
+   return null;
+ }
 }
 
 async function updateCurrTrack(code, newCurrTrack) {
- let query = {
-  code: code
- };
- let updated = {
-  $set: {
-   currentTrack: newCurrTrack
-  }
- };
- let result = await roomCollection.updateOne(query, updated);
- return result;
+ query = { code: code };
+ updated = { $set: { currentTrack: newCurrTrack } };
+ try{
+   result = await roomCollection.updateOne(query, updated);
+   return result;
+ }catch(e){
+   logger.log("ERROR UPDATING CURR TRACK IN DB -> " + e.message, 'error');
+   return null;
+ }
 }
 
 async function updateRoomQueue(code, newQueue) {
- let query = {
-  code: code
- };
- let updated = {
-  $set: {
-   queue: newQueue
-  }
- };
- let result = await roomCollection.updateOne(query, updated);
- return result;
+ query = { code: code };
+ updated = { $set: { queue: newQueue } };
+ try{
+   result = await roomCollection.updateOne(query, updated);
+   return result;
+ }catch(e){
+   logger.log("ERROR UPDATING ROOM QUEUE IN DB -> " + e.message, 'error');
+   return null;
+ }
 }
 
 module.exports = {

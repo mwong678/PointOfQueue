@@ -9,9 +9,7 @@ const EXPIRE_TIME_IN_MILLIS = 3 * HOUR_IN_MILLIS;
 async function updateQueues(){
   var rooms = await mongo.getAllRooms();
 
-  if (!rooms || (rooms && rooms.length == 0)){
-    return;
-  }
+  if (!rooms || (rooms && rooms.length == 0)) return;
 
   for (var i = 0; i < rooms.length; i++) {
    var currRoom = rooms[i];
@@ -32,22 +30,15 @@ async function updateQueues(){
      if (!new_access_token) return;
 
      updateResult = await mongo.updateRoomCodesInDB(code, new_access_token, refresh_token);
-     if (!updateResult) console.log("Error: unable to update new room access code");
-
      return;
    }
 
    if (Date.now() > created_at + EXPIRE_TIME_IN_MILLIS){
      delete_playlist = await spotify.deletePlaylist(access_token, playlist_id);
 
-     if (!delete_playlist){
-       console.log("Error deleting playlist");
-       return;
-     }
+     if (!delete_playlist) return;
 
      dbResult = await mongo.deleteRoom(code);
-
-     if (!dbResult) console.log("Error deleting room");
 
      return;
    }
@@ -108,18 +99,6 @@ async function updateQueues(){
 
 }
 
-function findCurrentInQueue(id, queueBody){
-  if (!queueBody.items) return;
-  
-  for (var i = 0; i < queueBody.items.length; i++) {
-   var currTrack = queueBody.items[i].track;
-   if (currTrack.id == id) {
-     return true;
-   }
-  }
-  return false;
-}
-
 async function pausedQueue(queueBody, code){
   var finalResult = [];
 
@@ -134,6 +113,18 @@ async function pausedQueue(queueBody, code){
   await mongo.updateRoomQueue(code, finalResult);
 }
 
+function findCurrentInQueue(id, queueBody){
+  if (!queueBody.items) return;
+
+  for (var i = 0; i < queueBody.items.length; i++) {
+   var currTrack = queueBody.items[i].track;
+   if (currTrack.id == id) {
+     return true;
+   }
+  }
+  return false;
+}
+
 function joinArtists(artists){
   artistString = "";
   for (var j = 0; j < artists.length; j++) {
@@ -144,6 +135,7 @@ function joinArtists(artists){
   }
   return artistString;
 }
+
 
 module.exports = {
   updateQueues

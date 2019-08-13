@@ -18,26 +18,18 @@ const createRoom = async (req, res) => {
   user_id = await spotify.getUserId(access_token);
 
   if (!user_id){
-    console.log("Error getting User Info");
     req.session = null;
     return res.redirect("/");
   }
 
   create_playlist = await spotify.createPlaylist(access_token, user_id);
 
-  if (!create_playlist){
-    console.log("Error creating Playlist");
-    req.session = null;
-    return res.redirect("/");
-  }
-
   dbResult = await mongo.addRoomInDB(create_playlist.playlistURI,
                                      create_playlist.playlistName,
                                      access_token,
                                      refresh_token);
 
-  if (!dbResult) {
-    console.log("Error creating room");
+  if (!dbResult || !create_playlist) {
     req.session = null;
     return res.redirect("/");
   }
@@ -50,13 +42,13 @@ const createRoom = async (req, res) => {
   res.clearCookie("access_token");
   res.clearCookie("refresh_token");
   res.cookie("poq", util.base64Encode(dbResult + ':' +  req.session.playlist + ":owner"), { maxAge: DAY_IN_MILLIS, secure: isProduction });
-  res.redirect("/");
+  return res.redirect("/");
 }
 
 
 const findRoom = async (req, res) => {
   roomResult = await mongo.getRoomCodeInDB(req.body.code);
-  if (!roomResult) res.sendStatus(404);
+  if (roomResult == null) return res.sendStatus(404)
 
   req.session.access_token = roomResult.access_token;
   req.session.refresh_token = roomResult.refresh_token;
@@ -64,7 +56,7 @@ const findRoom = async (req, res) => {
   req.session.playlist_name = roomResult.playlist_name;;
   req.session.playlist = roomResult.playlist.split(":")[2];
   res.cookie("poq", util.base64Encode(req.body.code + ':' + req.session.playlist + ":user"), { maxAge: DAY_IN_MILLIS, secure: isProduction});
-  res.sendStatus(200);
+  return res.sendStatus(200);
 }
 
 const deleteRoom = async (req, res) => {
@@ -73,13 +65,13 @@ const deleteRoom = async (req, res) => {
  access_token = req.session.access_token;
 
  delete_playlist = await spotify.deletePlaylist(access_token, playlist);
- if (!delete_playlist) res.sendStatus(404);
+ if (!delete_playlist) return res.sendStatus(404);
 
  dbResult = await mongo.deleteRoom(code);
- if (!dbResult) res.sendStatus(404);
+ if (!dbResult) return res.sendStatus(404);
 
  req.session = null;
- res.sendStatus(200);
+ return res.sendStatus(200);
 }
 
 const queue = async (req, res) => {
@@ -88,18 +80,17 @@ const queue = async (req, res) => {
  roomResult = await mongo.getRoomCodeInDB(req.session.room_code);
  if (!roomResult){
    req.session = null;
-   res.status(404).send({result: "DELETED"});
+   return res.status(404).send({result: "DELETED"});
  }
 
  result.currentTrack = roomResult.currentTrack;
  result.queue = roomResult.queue;
 
  if (req.session.access_token != roomResult.access_token) {
-  console.log("Changed to new access token!");
   req.session.access_token = roomResult.access_token;
  }
 
- res.send({ result: result });
+ return res.send({ result: result });
 }
 
 module.exports = {

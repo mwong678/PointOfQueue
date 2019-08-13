@@ -11,6 +11,7 @@ const routes = require('./routes');
 const mongo = require('./db/mongo');
 const background = require('./util/background');
 const properties = (isProduction) ? '' : require('./properties.json');
+const logger = require('./util/logger');
 
 
 var port = process.env.PORT || 8081;
@@ -45,15 +46,18 @@ app.use(cookieSession({
 app.use('/', routes);
 
 mongo.connectToServer(function(err, client) {
- if (err) console.log(err);
+ if (err) logger.log(err, 'error');
 
- //deleteRoom2('nEIV');
- //deleteRoom2('wcLN');
- //mongo.deleteRoom('ngzT');
+ //mongo.deleteRoom('LjHo');
  mongo.getAllRooms().then(function(result){
-   console.log(result);
+   logger.log('START OF ROOM REPORT', 'info');
+   result.forEach((room) => {
+     logger.log(room.code + ' -> ' + room.playlist, 'info');
+   });
+   if (result.length == 0) logger.log("NO ROOMS", 'info')
+   logger.log('END OF ROOM REPORT', 'info');
  })
 
  setInterval(async () => {await background.updateQueues()}, 1000);
- app.listen(port, () => console.log('Listening on ' + port));
+ app.listen(port, () => logger.log('Started Point Of Queue on port: ' + port));
 });

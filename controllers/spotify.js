@@ -1,6 +1,5 @@
 const querystring = require('querystring'),
       mongo = require('../db/mongo'),
-      util = require('../util'),
       spotify = require('../util/spotify');
 
 const stateKey = 'spotify_auth_state';
@@ -27,9 +26,9 @@ const callback = async (req, res) => {
 const search = async (req, res) => {
  searchResult = await spotify.search(req.session.access_token, req.body.query);
 
- if (!searchResult) res.status(404).send({result: "Error searching"});
+ if (!searchResult) return res.status(404).send({result: "Error searching"});
 
- res.send({ result: searchResult });
+ return res.send({ result: searchResult });
 }
 
 const addToQueue = async (req, res) => {
@@ -42,9 +41,9 @@ const addToQueue = async (req, res) => {
 
    addToQueueResult = await spotify.addSongToQueue(access_token, playlist_id, req.body.uri, songInfo);
 
-   if (!addToQueueResult) res.sendStatus(404);
+   if (!addToQueueResult) return res.sendStatus(404);
 
-   res.sendStatus(200);
+   return res.sendStatus(200);
 }
 
 module.exports = {

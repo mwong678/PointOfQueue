@@ -2,6 +2,7 @@ const querystring = require('querystring'),
       util = require('../util'),
       properties = (process.env.PORT) ? '' : require('../properties.json'),
       request = require('request-promise'),
+      logger = require('./logger'),
       request_old = require('request');
 
 const client_id = (process.env.PORT) ? process.env.client_id : properties.client_id;
@@ -64,7 +65,7 @@ async function getUserId(access_token){
        user_id = await request.get(getUserIdOptions);
        return user_id.id;
      }catch(e){
-       console.log("ERROR GETTING USER ID -> " + e.message);
+       logger.log("ERROR GETTING USER ID -> " + e.message, 'error');
        return null;
      }
 }
@@ -91,7 +92,7 @@ async function createPlaylist(access_token, user_id){
     response.playlistURI = result.uri;
     return response;
   }catch(e){
-    console.log("ERROR CREATING PLAYLIST -> " + e.message);
+    logger.log("ERROR CREATING PLAYLIST -> " + e.message, 'error');
     return null;
   }
 }
@@ -109,7 +110,7 @@ async function deletePlaylist(access_token, playlist){
     playlistResponse = await request.delete(deleteOptions);
     return true;
   }catch(e){
-    console.log("ERROR DELETING PLAYLIST -> " + e.message);
+    logger.log("ERROR DELETING PLAYLIST -> " + e.message, 'error');
     return false;
   }
 }
@@ -150,7 +151,7 @@ async function search(access_token, query){
 
     return finalResult;
   }catch(e){
-    console.log("ERROR SEARCHING -> " + e.message);
+    logger.log("ERROR SEARCHING -> " + e.message, 'error');
     return null;
   }
 }
@@ -188,10 +189,10 @@ async function addSongToQueue(access_token, playlist_id, uri, songInfo){
     addToQueueResult = await request.post(addToQueueOptions);
     request_old.put(turnOffShuffleOptions);
     request_old.put(turnOffRepeatOptions);
-    console.log("Added " + songInfo.song + " by " + songInfo.artist + " to the queue");
+    logger.log("Added " + songInfo.song + " by " + songInfo.artist + " to the queue", 'info');
     return true;
   }catch(e){
-    console.log("ERROR ADDING TO QUEUE -> " + e.message);
+    logger.log("ERROR ADDING TO QUEUE -> " + e.message, 'error');
     return null;
   }
 
@@ -214,7 +215,7 @@ async function getQueue(access_token, playlist_id){
     if (e.statusCode == 401 && e.message.includes('expired')){
       return "EXPIRED";
     }else{
-      console.log("ERROR GETTING QUEUE -> " + e.message);
+      logger.log("ERROR GETTING QUEUE -> " + e.message, 'error');
       return null;
     }
   }
@@ -237,7 +238,7 @@ async function refreshToken(refresh_token, callback) {
    tokenResponse = await request.post(authOptions);
    return tokenResponse.access_token;
  }catch(e){
-   console.log("ERROR REFRESHING TOKEN -> " + e.message);
+   logger.log("ERROR REFRESHING TOKEN -> " + e.message, 'error');
    return null;
  }
 }
@@ -255,7 +256,7 @@ async function getCurrentlyPlaying(access_token){
     getCurrentResponse = await request.get(getCurrentOptions);
     return getCurrentResponse;
   }catch(e){
-    console.log("ERROR GETTING CURRENT -> " + e.message);
+    logger.log("ERROR GETTING CURRENT -> " + e.message, 'error');
     return null;
   }
 }
@@ -276,11 +277,9 @@ async function deleteFromPlaylist(access_token, playlist_id, toDelete){
     await request.delete(deleteOptions);
     return true;
   }catch(e){
-    console.log("ERROR DELETING SONG -> " + e.message);
+    logger.log("ERROR DELETING SONG -> " + e.message, 'error');
     return false;
   }
-
-
 }
 
 module.exports = {
