@@ -19,7 +19,7 @@ var port = process.env.PORT || 8081;
 var app = express();
 
 var https_redirect = function (req, res, next) {
-  if (req.headers["x-forwarded-proto"] === "https") {
+  if (req.headers['x-forwarded-proto'] === 'https') {
     next();
   } else {
     if (isProduction){
@@ -38,7 +38,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.set('trust proxy', 1);
 app.use(cookieSession({
-  name: "session",
+  name: 'session',
   secret: (isProduction) ? process.env.secret : properties.secret,
   maxAge: 24 * 60 * 60 * 1000,
   cookies: {secure: isProduction}
@@ -50,14 +50,14 @@ mongo.connectToServer(function(err, client) {
 
  //mongo.deleteRoom('LjHo');
  mongo.getAllRooms().then(function(result){
-   logger.log('START OF ROOM REPORT', 'info');
+   logger.log('START OF ROOM REPORT');
    result.forEach((room) => {
-     logger.log(room.code + ' -> ' + room.playlist, 'info');
+     logger.log(`${room.code} -> ${room.playlist}`);
    });
-   if (result.length == 0) logger.log("NO ROOMS", 'info')
-   logger.log('END OF ROOM REPORT', 'info');
+   if (result.length == 0) logger.log('NO ROOMS')
+   logger.log('END OF ROOM REPORT');
  })
 
  setInterval(async () => {await background.updateQueues()}, 1000);
- app.listen(port, () => logger.log('Started Point Of Queue on port: ' + port));
+ app.listen(port, () => logger.log(`Started Point Of Queue on port: ${port}`));
 });

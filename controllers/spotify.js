@@ -7,40 +7,45 @@ const stateKey = 'spotify_auth_state';
 
 const callback = async (req, res) => {
 
-  var code = req.query.code || null;
-  var state = req.query.state || null;
-  var storedState = req.cookies ? req.cookies[stateKey] : null;
+  const code = req.query.code || null;
+  const state = req.query.state || null;
+  const storedState = req.cookies ? req.cookies[stateKey] : null;
 
   try {
     if (state === null || state !== storedState) {
+     logger.log('ERROR WITH SPOTIFY STATE', 'error');
      res.redirect('/createroom' +
       querystring.stringify({ error: 'state_mismatch' }));
     } else {
+      logger.log('State matched, generating tokens');
       res.clearCookie(stateKey);
       spotify.getBearer(res, code);
     }
   }catch(e){
-    logger.log("ERROR CALLING BACK -> " + e.message);
+    logger.log(`ERROR WITH SPOTIFY STATE -> ${e.message}`, 'error');
   }
 }
 
 const search = async (req, res) => {
- searchResult = await spotify.search(req.session.access_token, req.body.query);
+ const searchResult = await spotify.search(req.session.access_token, req.body.query);
 
- if (!searchResult) return res.status(404).send({result: "Error searching"});
+ if (!searchResult) return res.status(404).send({result: 'Error searching'});
 
  return res.send({ result: searchResult });
 }
 
 const addToQueue = async (req, res) => {
-   songInfo = {};
+   let songInfo = {};
    songInfo.song = req.body.song;
    songInfo.artist = req.body.artist;
    songInfo.uri = req.body.uri;
-   access_token = req.session.access_token
-   playlist_id = req.session.playlist;
+   const access_token = req.session.access_token
+   const playlist_id = req.session.playlist;
 
-   addToQueueResult = await spotify.addSongToQueue(access_token, playlist_id, req.body.uri, songInfo);
+   addToQueueResult = await spotify.addSongToQueue(access_token,
+                                                   playlist_id,
+                                                   req.body.uri,
+                                                   songInfo);
 
    if (!addToQueueResult) return res.sendStatus(404);
 
