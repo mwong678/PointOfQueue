@@ -17,7 +17,6 @@ const callback = async (req, res) => {
      res.redirect('/createroom' +
       querystring.stringify({ error: 'state_mismatch' }));
     } else {
-      logger.log('State matched, generating tokens');
       res.clearCookie(stateKey);
       spotify.getBearer(res, code);
     }
